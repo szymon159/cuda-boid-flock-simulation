@@ -12,4 +12,8 @@ private:
 public: 
 	Boid();
 	Boid(int x, int y, int angle);
+
+	int GetX();
+	int GetY();
+	int GetAngle();
 };

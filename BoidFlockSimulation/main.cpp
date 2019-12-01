@@ -13,10 +13,14 @@ int main(int argc, char *argv[])
 	if (window.initWindow())
 		return EXIT_FAILURE;
 
+	int i = 10;
 	// Main window loop
 	SDL_Event event;
 	while (true)
 	{
+		window.addBoidToWindow(i, i);
+		i += 10;
+
 		while (SDL_PollEvent(&event) != 0)
 		{
 			if (event.type == SDL_QUIT)
@@ -25,6 +29,8 @@ int main(int argc, char *argv[])
 				return EXIT_SUCCESS;
 			}
 		}
+
+		window.drawBoids();
 	}
 
 	return EXIT_FAILURE;

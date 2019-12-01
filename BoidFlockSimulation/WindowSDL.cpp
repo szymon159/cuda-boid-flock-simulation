@@ -74,13 +74,6 @@ int WindowSDL::loadBoidTexture()
 		return 1;
 	}
 
-	//
-	SDL_Rect dstrect = { 5, 5, 30, 30 };
-	SDL_RenderCopy(_renderer, _boidTexture, NULL, &dstrect);
-	SDL_RenderPresent(_renderer);
-
-	//
-
 	return 0;
 }
 
@@ -88,4 +81,16 @@ void WindowSDL::addBoidToWindow(int x, int y, int angle)
 {
 	Boid newBoid(x, y, angle);
 	_boids.push_back(newBoid);
+}
+
+void WindowSDL::drawBoids()
+{
+	size_t boidCount = _boids.size();
+
+	for (size_t i = 0; i < boidCount; i++)
+	{
+		SDL_Rect dstrect = { _boids[i].GetX(), _boids[i].GetY(), 30, 30 };
+		SDL_RenderCopy(_renderer, _boidTexture, NULL, &dstrect);
+	}
+	SDL_RenderPresent(_renderer);
 }

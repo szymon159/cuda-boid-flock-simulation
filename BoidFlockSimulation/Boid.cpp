@@ -10,3 +10,18 @@ Boid::Boid(int x, int y, int angle)
 {
 
 }
+
+int Boid::GetX()
+{
+	return _x;
+}
+
+int Boid::GetY()
+{
+	return _y;
+}
+
+int Boid::GetAngle()
+{
+	return _angle;
+}
