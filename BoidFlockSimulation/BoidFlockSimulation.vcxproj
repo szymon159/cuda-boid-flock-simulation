@@ -85,10 +85,12 @@
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Boid.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="WindowSDL.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Boid.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="WindowSDL.h" />

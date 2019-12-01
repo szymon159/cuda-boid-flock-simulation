@@ -6,6 +6,9 @@ WindowSDL::WindowSDL(int backgroundColor[4], char *windowTitle, int windowWidth,
 	// Arrays in C++ ...
 	for(int i = 0 ; i < 4; i++)
 		_backgroundColor[i] = backgroundColor[i];
+
+	_window = nullptr;
+	_renderer = nullptr;
 }
 
 int WindowSDL::initWindow()

@@ -2,6 +2,8 @@
 
 #include "includes.h"
 
+#include "Boid.h"
+
 class WindowSDL
 {
 private:
@@ -9,7 +11,7 @@ private:
 	char *_windowTitle;
 	int _windowHeight;
 	int _windowWidth;
-	std::vector<int> boids;
+	std::vector<Boid> _boids;
 
 	SDL_Window *_window;
 	SDL_Renderer *_renderer;

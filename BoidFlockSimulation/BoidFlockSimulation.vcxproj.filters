@@ -6,11 +6,13 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="WindowSDL.cpp" />
+    <ClCompile Include="Boid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="WindowSDL.h" />
     <ClInclude Include="includes.h" />
+    <ClInclude Include="Boid.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
