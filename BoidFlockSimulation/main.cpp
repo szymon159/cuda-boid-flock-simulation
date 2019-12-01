@@ -1,10 +1,16 @@
 #include "includes.h"
-#include "window.h"
+#include "WindowSDL.h"
+
+int BACKGROUND_COLOR[4] = { 0, 105, 148, 255 }; // Sea blue
+char *WINDOW_TITLE = "Boid Flock Simulation";
+int WINDOW_HEIGHT = 600;
+int WINDOW_WIDTH = 600;
 
 int main(int argc, char *argv[])
 {
-	SDL_Window *window = initWindow();
-	if (window == nullptr)
+	WindowSDL window(BACKGROUND_COLOR, WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	if (window.initWindow())
 		return EXIT_FAILURE;
 
 	// Main window loop
@@ -15,7 +21,7 @@ int main(int argc, char *argv[])
 		{
 			if (event.type == SDL_QUIT)
 			{
-				destroyWindow(window);
+				window.destroyWindow();
 				return EXIT_SUCCESS;
 			}
 		}
