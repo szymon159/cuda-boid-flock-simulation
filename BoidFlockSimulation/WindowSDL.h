@@ -21,5 +21,7 @@ public:
 
 	int initWindow();
 	void destroyWindow();
+
+	void addBoidToWindow(int x, int y, int angle = 0);
 };
 

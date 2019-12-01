@@ -48,3 +48,8 @@ void WindowSDL::destroyWindow()
 	printf("Window destroyed successfully!\n");
 }
 
+void WindowSDL::addBoidToWindow(int x, int y, int angle)
+{
+	Boid newBoid(x, y, angle);
+	_boids.push_back(newBoid);
+}
