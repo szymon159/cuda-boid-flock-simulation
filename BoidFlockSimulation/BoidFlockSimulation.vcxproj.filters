@@ -9,22 +9,8 @@
     <ClCompile Include="Boid.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="WindowSDL.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="Boid.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="resources">
-      <UniqueIdentifier>{c39883a1-79a0-4a64-8f6f-0b607b880ad3}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="resources\fish.png">
-      <Filter>resources</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="BoidFlockSimulation.rc" />
   </ItemGroup>
 </Project>

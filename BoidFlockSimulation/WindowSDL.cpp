@@ -38,6 +38,8 @@ int WindowSDL::initWindow()
 	SDL_RenderPresent(_renderer);
 	printf("Window initialized successfully!\n");
 
+	loadBoidTexture();
+
 	return 0;
 }
 
@@ -46,6 +48,11 @@ void WindowSDL::destroyWindow()
 	SDL_DestroyWindow(_window);
 	SDL_Quit();
 	printf("Window destroyed successfully!\n");
+}
+
+void WindowSDL::loadBoidTexture()
+{
+	//SDL_Surface *image = IMG_Load()
 }
 
 void WindowSDL::addBoidToWindow(int x, int y, int angle)

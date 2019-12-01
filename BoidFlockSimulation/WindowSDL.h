@@ -21,6 +21,7 @@ public:
 
 	int initWindow();
 	void destroyWindow();
+	void loadBoidTexture();
 
 	void addBoidToWindow(int x, int y, int angle = 0);
 };
