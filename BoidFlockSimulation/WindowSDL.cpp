@@ -1,7 +1,7 @@
 #include "WindowSDL.h"
 
-WindowSDL::WindowSDL(int backgroundColor[4], char *windowTitle, int windowWidth, int windowHeight)
-	: _windowTitle(windowTitle), _windowWidth(windowWidth), _windowHeight(windowHeight)
+WindowSDL::WindowSDL(int backgroundColor[4], char *windowTitle, int windowWidth, int windowHeight, int boidSize)
+	: _windowTitle(windowTitle), _windowWidth(windowWidth), _windowHeight(windowHeight), _boidSize(boidSize)
 {
 	// Arrays in C++ ...
 	for(int i = 0 ; i < 4; i++)
@@ -79,7 +79,7 @@ int WindowSDL::loadBoidTexture()
 
 void WindowSDL::addBoidToWindow(int x, int y, int angle)
 {
-	Boid newBoid(x, y, angle);
+	Boid newBoid(_windowWidth, _windowHeight, _boidSize, x, y, angle);
 	_boids.push_back(newBoid);
 }
 
@@ -94,7 +94,7 @@ int WindowSDL::drawBoids()
 	size_t boidCount = _boids.size();
 	for (size_t i = 0; i < boidCount; i++)
 	{
-		SDL_Rect dstrect = { _boids[i].getX(), _boids[i].getY(), 30, 30 };
+		SDL_Rect dstrect = { _boids[i].getX(), _boids[i].getY(), _boidSize, _boidSize };
 		if (SDL_RenderCopyEx(_renderer, _boidTexture, NULL, &dstrect, _boids[i].getAngle(), NULL, SDL_FLIP_NONE) < 0)
 		{
 			printf("Unable to render boid! SDL_Error: %s \n", SDL_GetError());
@@ -104,4 +104,13 @@ int WindowSDL::drawBoids()
 	SDL_RenderPresent(_renderer);
 
 	return 0;
+}
+
+void WindowSDL::moveBoids()
+{
+	size_t boidCount = _boids.size();
+	for (size_t i = 0; i < boidCount; i++)
+	{
+		_boids[i].move();
+	}
 }

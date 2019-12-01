@@ -11,6 +11,7 @@ private:
 	char *_windowTitle;
 	int _windowHeight;
 	int _windowWidth;
+	int _boidSize;
 	std::vector<Boid> _boids;
 
 	SDL_Window *_window;
@@ -18,7 +19,7 @@ private:
 	SDL_Texture *_boidTexture;
 
 public:
-	WindowSDL(int backgroundColor[4], char *windowTitle, int windowWidth, int windowHeight);
+	WindowSDL(int backgroundColor[4], char *windowTitle, int windowWidth, int windowHeight, int boidSize);
 
 	int initWindow();
 	void destroyWindow();
@@ -26,5 +27,6 @@ public:
 
 	void addBoidToWindow(int x, int y, int angle = 0);
 	int drawBoids();
+	void moveBoids();
 };
 

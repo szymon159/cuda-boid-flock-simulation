@@ -5,16 +5,20 @@ int BACKGROUND_COLOR[4] = { 0, 105, 148, 255 }; // Sea blue
 char *WINDOW_TITLE = "Boid Flock Simulation";
 int WINDOW_HEIGHT = 600;
 int WINDOW_WIDTH = 600;
+int BOID_SIZE = 30;
 
 int main(int argc, char *argv[])
 {
-	WindowSDL window(BACKGROUND_COLOR, WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
+	WindowSDL window(BACKGROUND_COLOR, WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, BOID_SIZE);
 
 	if (window.initWindow())
 		return EXIT_FAILURE;
 
-	window.addBoidToWindow(10, 10, 180);
-	window.addBoidToWindow(20, 20, 90);
+	window.addBoidToWindow(20, 20, 225);
+	window.addBoidToWindow(540, 20, -45);
+	window.addBoidToWindow(20, 540, 135);
+	window.addBoidToWindow(540, 540, 45);
+	window.addBoidToWindow(290, 290, 0);
 
 	// Main window loop
 	SDL_Event event;
@@ -29,6 +33,8 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		SDL_Delay(15);
+		window.moveBoids();
 		window.drawBoids();
 	}
 
