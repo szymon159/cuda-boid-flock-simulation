@@ -38,21 +38,50 @@ int WindowSDL::initWindow()
 	SDL_RenderPresent(_renderer);
 	printf("Window initialized successfully!\n");
 
-	loadBoidTexture();
-
-	return 0;
+	return loadBoidTexture();
 }
 
 void WindowSDL::destroyWindow()
 {
+	SDL_DestroyTexture(_boidTexture);
+	SDL_DestroyRenderer(_renderer);
 	SDL_DestroyWindow(_window);
 	SDL_Quit();
 	printf("Window destroyed successfully!\n");
 }
 
-void WindowSDL::loadBoidTexture()
+int WindowSDL::loadBoidTexture()
 {
-	//SDL_Surface *image = IMG_Load()
+	//Initialize PNG loading
+	int imgFlags = IMG_INIT_PNG;
+	if (!(IMG_Init(imgFlags) & imgFlags))
+	{
+		printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+		return 1;
+	}
+
+	SDL_Surface *image = IMG_Load("boid.png");
+	if (image == NULL)
+	{
+		printf("Unable to load image! SDL_image Error: %s\n", IMG_GetError());
+		return 1;
+	}
+
+	_boidTexture = SDL_CreateTextureFromSurface(_renderer, image);
+	if (_boidTexture == NULL)
+	{
+		printf("Unable to create texture from image! SDL_image Error: %s \n", IMG_GetError());
+		return 1;
+	}
+
+	//
+	SDL_Rect dstrect = { 5, 5, 30, 30 };
+	SDL_RenderCopy(_renderer, _boidTexture, NULL, &dstrect);
+	SDL_RenderPresent(_renderer);
+
+	//
+
+	return 0;
 }
 
 void WindowSDL::addBoidToWindow(int x, int y, int angle)

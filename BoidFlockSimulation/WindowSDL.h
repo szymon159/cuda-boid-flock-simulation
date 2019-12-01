@@ -15,13 +15,14 @@ private:
 
 	SDL_Window *_window;
 	SDL_Renderer *_renderer;
+	SDL_Texture *_boidTexture;
 
 public:
 	WindowSDL(int backgroundColor[4], char *windowTitle, int windowWidth, int windowHeight);
 
 	int initWindow();
 	void destroyWindow();
-	void loadBoidTexture();
+	int loadBoidTexture();
 
 	void addBoidToWindow(int x, int y, int angle = 0);
 };
