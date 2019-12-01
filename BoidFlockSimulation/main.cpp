@@ -13,14 +13,13 @@ int main(int argc, char *argv[])
 	if (window.initWindow())
 		return EXIT_FAILURE;
 
-	int i = 10;
+	window.addBoidToWindow(10, 10, 180);
+	window.addBoidToWindow(20, 20, 90);
+
 	// Main window loop
 	SDL_Event event;
 	while (true)
 	{
-		window.addBoidToWindow(i, i);
-		i += 10;
-
 		while (SDL_PollEvent(&event) != 0)
 		{
 			if (event.type == SDL_QUIT)

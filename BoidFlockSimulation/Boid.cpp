@@ -5,7 +5,7 @@ Boid::Boid()
 
 }
 
-Boid::Boid(int x, int y, int angle)
+Boid::Boid(int x, int y, double angle)
 	:_x(x), _y(y), _angle(angle)
 {
 
@@ -21,7 +21,7 @@ int Boid::GetY()
 	return _y;
 }
 
-int Boid::GetAngle()
+double Boid::GetAngle()
 {
 	return _angle;
 }

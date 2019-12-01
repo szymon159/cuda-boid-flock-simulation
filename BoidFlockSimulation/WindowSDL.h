@@ -25,6 +25,6 @@ public:
 	int loadBoidTexture();
 
 	void addBoidToWindow(int x, int y, int angle = 0);
-	void drawBoids();
+	int drawBoids();
 };
 

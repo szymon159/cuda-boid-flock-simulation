@@ -7,13 +7,13 @@ class Boid
 private:
 	int _x;
 	int _y;
-	int _angle;
+	double _angle;
 
 public: 
 	Boid();
-	Boid(int x, int y, int angle);
+	Boid(int x, int y, double angle = 0.0);
 
 	int GetX();
 	int GetY();
-	int GetAngle();
+	double GetAngle();
 };

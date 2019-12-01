@@ -83,14 +83,25 @@ void WindowSDL::addBoidToWindow(int x, int y, int angle)
 	_boids.push_back(newBoid);
 }
 
-void WindowSDL::drawBoids()
+int WindowSDL::drawBoids()
 {
-	size_t boidCount = _boids.size();
+	if (SDL_RenderClear(_renderer) < 0)
+	{
+		printf("Unable to clear renderer buffer! SDL_Error: %s \n", SDL_GetError());
+		return 1;
+	}
 
+	size_t boidCount = _boids.size();
 	for (size_t i = 0; i < boidCount; i++)
 	{
 		SDL_Rect dstrect = { _boids[i].GetX(), _boids[i].GetY(), 30, 30 };
-		SDL_RenderCopy(_renderer, _boidTexture, NULL, &dstrect);
+		if (SDL_RenderCopyEx(_renderer, _boidTexture, NULL, &dstrect, _boids[i].GetAngle(), NULL, SDL_FLIP_NONE) < 0)
+		{
+			printf("Unable to render boid! SDL_Error: %s \n", SDL_GetError());
+			return 1;
+		}
 	}
 	SDL_RenderPresent(_renderer);
+
+	return 0;
 }
