@@ -13,7 +13,7 @@ public:
 	Boid();
 	Boid(int x, int y, double angle = 0.0);
 
-	int GetX();
-	int GetY();
-	double GetAngle();
+	int getX();
+	int getY();
+	double getAngle();
 };

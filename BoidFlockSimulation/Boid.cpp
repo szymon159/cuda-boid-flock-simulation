@@ -11,17 +11,17 @@ Boid::Boid(int x, int y, double angle)
 
 }
 
-int Boid::GetX()
+int Boid::getX()
 {
 	return _x;
 }
 
-int Boid::GetY()
+int Boid::getY()
 {
 	return _y;
 }
 
-double Boid::GetAngle()
+double Boid::getAngle()
 {
 	return _angle;
 }

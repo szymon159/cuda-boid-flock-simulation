@@ -94,8 +94,8 @@ int WindowSDL::drawBoids()
 	size_t boidCount = _boids.size();
 	for (size_t i = 0; i < boidCount; i++)
 	{
-		SDL_Rect dstrect = { _boids[i].GetX(), _boids[i].GetY(), 30, 30 };
-		if (SDL_RenderCopyEx(_renderer, _boidTexture, NULL, &dstrect, _boids[i].GetAngle(), NULL, SDL_FLIP_NONE) < 0)
+		SDL_Rect dstrect = { _boids[i].getX(), _boids[i].getY(), 30, 30 };
+		if (SDL_RenderCopyEx(_renderer, _boidTexture, NULL, &dstrect, _boids[i].getAngle(), NULL, SDL_FLIP_NONE) < 0)
 		{
 			printf("Unable to render boid! SDL_Error: %s \n", SDL_GetError());
 			return 1;
