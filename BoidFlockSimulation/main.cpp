@@ -14,18 +14,20 @@ int main(int argc, char *argv[])
 	if (window == NULL)
 	{
 		printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-		return 1;
+		return EXIT_FAILURE;
 	}
 	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
 	if (renderer == NULL)
 	{
+		SDL_DestroyWindow(window);
+		SDL_Quit();
 		printf("Window renderer could not be created! SDL_Error: %s\n", SDL_GetError());
-		return 1;
+		return EXIT_FAILURE;
 	}
 	SDL_SetRenderDrawColor(renderer, BACKGROUND_COLOR[0], BACKGROUND_COLOR[1], BACKGROUND_COLOR[2], BACKGROUND_COLOR[3]);
 	SDL_RenderClear(renderer);
 	SDL_RenderPresent(renderer);
-	printf("Window initialized successfully\n");
+	printf("Window initialized successfully!\n");
 
 	// Main window loop
 	SDL_Event event;
@@ -35,10 +37,13 @@ int main(int argc, char *argv[])
 		{
 			if (event.type == SDL_QUIT)
 			{
-				return 0;
+				SDL_DestroyWindow(window);
+				SDL_Quit();
+				printf("Window destroyed successfully!\n");
+				return EXIT_SUCCESS;
 			}
 		}
 	}
 
-	return 0;
+	return EXIT_FAILURE;
 }
