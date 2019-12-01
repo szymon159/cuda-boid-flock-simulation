@@ -9,6 +9,7 @@ private:
 	char *_windowTitle;
 	int _windowHeight;
 	int _windowWidth;
+	std::vector<int> boids;
 
 	SDL_Window *_window;
 	SDL_Renderer *_renderer;
