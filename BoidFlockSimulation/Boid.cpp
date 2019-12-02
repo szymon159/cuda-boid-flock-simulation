@@ -5,47 +5,57 @@ Boid::Boid()
 
 }
 
-Boid::Boid(int windowWidth, int windowHeight, int size, int x, int y, double angle)
-	:_windowWidth(windowWidth), _windowHeight(windowHeight), _size(size), _x(x), _y(y), _angle(angle)
+Boid::Boid(int windowWidth, int windowHeight, int size, float x, float y, float angle)
+	:_windowWidth(windowWidth), _windowHeight(windowHeight), _size(size)
 {
+	_position.x = x;
+	_position.y = y;
+	_position.z = angle;
+
 	srand((int)time(0));
+}
+
+float3 Boid::getPosition()
+{
+	return _position;
 }
 
 int Boid::getX()
 {
-	return _x;
+	return _position.x;
 }
 
 int Boid::getY()
 {
-	return _y;
+	return _position.y;
 }
 
-double Boid::getAngle()
+float Boid::getAngle()
 {
-	return _angle;
+	return _position.z;
 }
 
 void Boid::move()
 {
-	int newX = _x + 5 + rand() % 11 - 5;
-	int newY = _y + 5 + rand() % 11 - 5;
-	double newAngle = _angle + rand() % 11 - 5;
+	float newX = _position.x + 5 + rand() % 11 - 5;
+	float newY = _position.y + 5 + rand() % 11 - 5;
+	float newAngle = _position.z + rand() % 11 - 5;
 
 	move(newX, newY, newAngle);
 }
 
-void Boid::move(int newX, int newY)
+void Boid::move(float newX, float newY)
 {
-	move(newX, newY, _angle);
+	move(newX, newY, _position.z);
 }
 
-void Boid::move(int newX, int newY, double newAngle)
+void Boid::move(float newX, float newY, float newAngle)
 {
 	if(newX > _size / 2 && newX < (_windowWidth - _size - 30))
-		_x = newX;
+		_position.x = newX;
 
 	if (newY > _size / 2 && newY < (_windowHeight - _size - 30))
-		_y = newY;
-	_angle = newAngle;
+		_position.y = newY;
+
+	_position.z = newAngle;
 }

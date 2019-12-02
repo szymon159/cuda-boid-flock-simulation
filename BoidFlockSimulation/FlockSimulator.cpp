@@ -6,7 +6,7 @@ FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize)
 
 }
 
-void FlockSimulator::addBoid(int x, int y, int angle)
+void FlockSimulator::addBoid(float x, float y, float angle)
 {
 	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, angle);
 	_boids.push_back(newBoid);

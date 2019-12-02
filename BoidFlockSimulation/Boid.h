@@ -5,9 +5,7 @@
 class Boid
 {
 private:
-	int _x;
-	int _y;
-	double _angle;
+	float3 _position;
 
 	int _windowHeight;
 	int _windowWidth;
@@ -15,12 +13,13 @@ private:
 
 public: 
 	Boid();
-	Boid(int windowWidth, int windowHeight, int size, int x, int y, double angle = 0.0);
+	Boid(int windowWidth, int windowHeight, int size, float x, float y, float angle = 0.0);
 
+	float3 getPosition();
 	int getX();
 	int getY();
-	double getAngle();
+	float getAngle();
 	void move();
-	void move(int newX, int newY);
-	void move(int newX, int newY, double newAngle);
+	void move(float newX, float newY);
+	void move(float newX, float newY, float newAngle);
 };
