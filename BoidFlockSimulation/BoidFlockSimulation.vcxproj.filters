@@ -7,10 +7,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="WindowSDL.cpp" />
     <ClCompile Include="Boid.cpp" />
+    <ClCompile Include="FlockSimulator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowSDL.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="Boid.h" />
+    <ClInclude Include="FlockSimulator.h" />
   </ItemGroup>
 </Project>

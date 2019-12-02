@@ -1,5 +1,7 @@
 #include "includes.h"
+
 #include "WindowSDL.h"
+#include "FlockSimulator.h"
 
 int BACKGROUND_COLOR[4] = { 0, 105, 148, 255 }; // Sea blue
 char *WINDOW_TITLE = "Boid Flock Simulation";
@@ -9,16 +11,16 @@ int BOID_SIZE = 30;
 
 int main(int argc, char *argv[])
 {
-	WindowSDL window(BACKGROUND_COLOR, WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, BOID_SIZE);
-
+	WindowSDL window(BACKGROUND_COLOR, WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 	if (window.initWindow())
 		return EXIT_FAILURE;
 
-	window.addBoidToWindow(20, 20, 225);
-	window.addBoidToWindow(540, 20, -45);
-	window.addBoidToWindow(20, 540, 135);
-	window.addBoidToWindow(540, 540, 45);
-	window.addBoidToWindow(290, 290, 0);
+	FlockSimulator simulator(&window, BOID_SIZE);
+	simulator.addBoid(20, 20, 225);
+	simulator.addBoid(540, 20, -45);
+	simulator.addBoid(20, 540, 135);
+	simulator.addBoid(540, 540, 45);
+	simulator.addBoid(290, 290, 0);
 
 	// Main window loop
 	SDL_Event event;
@@ -33,9 +35,9 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		SDL_Delay(15);
-		window.moveBoids();
-		window.drawBoids();
+		SDL_Delay(50);
+		simulator.moveBoids();
+		simulator.drawBoids();
 	}
 
 	return EXIT_FAILURE;

@@ -8,7 +8,7 @@ Boid::Boid()
 Boid::Boid(int windowWidth, int windowHeight, int size, int x, int y, double angle)
 	:_windowWidth(windowWidth), _windowHeight(windowHeight), _size(size), _x(x), _y(y), _angle(angle)
 {
-	srand(time(0));
+	srand((int)time(0));
 }
 
 int Boid::getX()
@@ -28,8 +28,8 @@ double Boid::getAngle()
 
 void Boid::move()
 {
-	int newX = _x + rand() % 11 - 5;
-	int newY = _y + rand() % 11 - 5;
+	int newX = _x + 5 + rand() % 11 - 5;
+	int newY = _y + 5 + rand() % 11 - 5;
 	double newAngle = _angle + rand() % 11 - 5;
 
 	move(newX, newY, newAngle);

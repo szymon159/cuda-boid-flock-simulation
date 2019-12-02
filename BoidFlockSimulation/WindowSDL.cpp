@@ -1,14 +1,21 @@
 #include "WindowSDL.h"
 
-WindowSDL::WindowSDL(int backgroundColor[4], char *windowTitle, int windowWidth, int windowHeight, int boidSize)
-	: _windowTitle(windowTitle), _windowWidth(windowWidth), _windowHeight(windowHeight), _boidSize(boidSize)
+WindowSDL::WindowSDL(int backgroundColor[4], char *windowTitle, int windowWidth, int windowHeight)
+	: _windowTitle(windowTitle), _windowWidth(windowWidth), _windowHeight(windowHeight), _window (nullptr), _renderer (nullptr)
 {
 	// Arrays in C++ ...
 	for(int i = 0 ; i < 4; i++)
 		_backgroundColor[i] = backgroundColor[i];
+}
 
-	_window = nullptr;
-	_renderer = nullptr;
+int WindowSDL::getWidth()
+{
+	return _windowWidth;
+}
+
+int WindowSDL::getHeight()
+{
+	return _windowHeight;
 }
 
 int WindowSDL::initWindow()
@@ -34,7 +41,11 @@ int WindowSDL::initWindow()
 		return 1;
 	}
 	SDL_SetRenderDrawColor(_renderer, _backgroundColor[0], _backgroundColor[1], _backgroundColor[2], _backgroundColor[3]);
-	SDL_RenderClear(_renderer);
+	if (SDL_RenderClear(_renderer) < 0)
+	{
+		printf("Unable to clear renderer target! SDL_Error: %s \n", SDL_GetError());
+		return 1;
+	}
 	SDL_RenderPresent(_renderer);
 	printf("Window initialized successfully!\n");
 
@@ -49,6 +60,38 @@ void WindowSDL::destroyWindow()
 	SDL_Quit();
 	printf("Window destroyed successfully!\n");
 }
+
+int WindowSDL::addBoidToRenderer(Boid boid, int boidSize)
+{
+	SDL_Rect dstrect = { boid.getX(), boid.getY(), boidSize, boidSize };
+	if (SDL_RenderCopyEx(_renderer, _boidTexture, NULL, &dstrect, boid.getAngle(), NULL, SDL_FLIP_NONE) < 0)
+	{
+		printf("Unable to render boid! SDL_Error: %s \n", SDL_GetError());
+		return 1;
+	}
+
+	return 0;
+}
+
+int WindowSDL::clearRenderer()
+{
+	if (SDL_RenderClear(_renderer) < 0)
+	{
+		printf("Unable to clear renderer target! SDL_Error: %s \n", SDL_GetError());
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void WindowSDL::render()
+{
+	SDL_RenderPresent(_renderer);
+}
+
+// Private methods
 
 int WindowSDL::loadBoidTexture()
 {
@@ -68,6 +111,7 @@ int WindowSDL::loadBoidTexture()
 	}
 
 	_boidTexture = SDL_CreateTextureFromSurface(_renderer, image);
+	SDL_FreeSurface(image);
 	if (_boidTexture == NULL)
 	{
 		printf("Unable to create texture from image! SDL_image Error: %s \n", IMG_GetError());
@@ -75,42 +119,4 @@ int WindowSDL::loadBoidTexture()
 	}
 
 	return 0;
-}
-
-void WindowSDL::addBoidToWindow(int x, int y, int angle)
-{
-	Boid newBoid(_windowWidth, _windowHeight, _boidSize, x, y, angle);
-	_boids.push_back(newBoid);
-}
-
-int WindowSDL::drawBoids()
-{
-	if (SDL_RenderClear(_renderer) < 0)
-	{
-		printf("Unable to clear renderer buffer! SDL_Error: %s \n", SDL_GetError());
-		return 1;
-	}
-
-	size_t boidCount = _boids.size();
-	for (size_t i = 0; i < boidCount; i++)
-	{
-		SDL_Rect dstrect = { _boids[i].getX(), _boids[i].getY(), _boidSize, _boidSize };
-		if (SDL_RenderCopyEx(_renderer, _boidTexture, NULL, &dstrect, _boids[i].getAngle(), NULL, SDL_FLIP_NONE) < 0)
-		{
-			printf("Unable to render boid! SDL_Error: %s \n", SDL_GetError());
-			return 1;
-		}
-	}
-	SDL_RenderPresent(_renderer);
-
-	return 0;
-}
-
-void WindowSDL::moveBoids()
-{
-	size_t boidCount = _boids.size();
-	for (size_t i = 0; i < boidCount; i++)
-	{
-		_boids[i].move();
-	}
 }
