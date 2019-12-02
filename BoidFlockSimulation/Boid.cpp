@@ -20,14 +20,19 @@ float3 Boid::getPosition()
 	return _position;
 }
 
+float2 Boid::getCoordinates()
+{
+	return make_float2(_position.x, _position.y);
+}
+
 int Boid::getX()
 {
-	return _position.x;
+	return (int)_position.x;
 }
 
 int Boid::getY()
 {
-	return _position.y;
+	return (int)_position.y;
 }
 
 float Boid::getAngle()

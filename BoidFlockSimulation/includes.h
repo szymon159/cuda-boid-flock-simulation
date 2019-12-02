@@ -11,3 +11,5 @@
 #include <cuda.h>
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+
+constexpr float RADIAN_MULTIPLIER = (float)M_PI / 180;

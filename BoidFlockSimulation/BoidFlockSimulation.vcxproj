@@ -92,12 +92,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Boid.cpp" />
+    <ClCompile Include="Calculator.cpp" />
     <ClCompile Include="FlockSimulator.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="WindowSDL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boid.h" />
+    <ClInclude Include="Calculator.h" />
     <ClInclude Include="FlockSimulator.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="WindowSDL.h" />
