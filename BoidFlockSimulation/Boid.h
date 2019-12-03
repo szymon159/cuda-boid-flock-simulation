@@ -20,8 +20,5 @@ public:
 	int getX();
 	int getY();
 	float getAngle();
-	void move();
-	void move(float newX, float newY);
-	void move(float newX, float newY, float newAngle);
-	void move(float3 newPosition);
+	void move(float3 movement);
 };

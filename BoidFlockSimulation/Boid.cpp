@@ -40,32 +40,17 @@ float Boid::getAngle()
 	return _position.z;
 }
 
-void Boid::move()
+void Boid::move(float3 movement)
 {
-	float newX = _position.x + 5 + rand() % 11 - 5;
-	float newY = _position.y + 5 + rand() % 11 - 5;
-	float newAngle = _position.z + rand() % 11 - 5;
+	float newX = _position.x + movement.x;
+	if (newX < _size / 2 || newX > _windowWidth - _size)
+		newX -= movement.x;
 
-	move(newX, newY, newAngle);
-}
-
-void Boid::move(float newX, float newY)
-{
-	move(newX, newY, _position.z);
-}
-
-void Boid::move(float newX, float newY, float newAngle)
-{
-	if(newX > _size / 2 && newX < (_windowWidth - _size - 30))
-		_position.x = newX;
-
-	if (newY > _size / 2 && newY < (_windowHeight - _size - 30))
-		_position.y = newY;
-
-	_position.z = newAngle;
-}
-
-void Boid::move(float3 newPosition)
-{
-	move(newPosition.x, newPosition.y, newPosition.z);
+	float newY = _position.y + movement.y;
+	if (newY < _size / 2 || newY > _windowHeight - _size)
+		newY -= movement.y;
+	
+	_position.x = newX;
+	_position.y = newY;
+	_position.z = movement.z;
 }
