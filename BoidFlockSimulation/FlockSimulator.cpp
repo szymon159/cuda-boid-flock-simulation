@@ -10,11 +10,13 @@ int FlockSimulator::run()
 {
 	// Main window loop
 	SDL_Event event;
-	int time = SDL_GetTicks();
-	int delay = 0;
+	float time = SDL_GetTicks();
 
 	while (true)
 	{
+		float dt = SDL_GetTicks() - time;
+		time += dt;
+
 		while (SDL_PollEvent(&event) != 0)
 		{
 			if (event.type == SDL_QUIT)
@@ -24,22 +26,16 @@ int FlockSimulator::run()
 			}
 		}
 
-		delay = SDL_GetTicks() - time;
-		printf("%d\n", delay);
-		if (update(delay))
-			return 1;
-		time = SDL_GetTicks();
+		update(dt);
 
 		if (drawBoids())
 			return 1;
 	}
 }
 
-int FlockSimulator::update(time_t delay)
+void FlockSimulator::update(float dt)
 {
-	moveBoids(delay);
-
-	return 0;
+	moveBoids(dt);
 }
 
 void FlockSimulator::generateBoids(int count)
@@ -82,10 +78,10 @@ int FlockSimulator::drawBoids()
 	return 0;
 }
 
-void FlockSimulator::moveBoids(time_t delay)
+void FlockSimulator::moveBoids(float dt)
 {
 	size_t boidCount = _boids.size();
-	float refreshRateCoeeficient = (float)delay / 16.0;
+	float refreshRateCoeeficient = dt / 100;
 
 	for (size_t i = 0; i < boidCount; i++)
 	{
