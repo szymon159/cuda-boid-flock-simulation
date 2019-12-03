@@ -1,17 +1,17 @@
 #include "Calculator.h"
 
-void Calculator::updateSeparationFactor(float2 &separationFactor, const float3 &startBoidPosition, const float3 &targetBoidPosition, const float &distance)
+void Calculator::updateSeparationFactor(float2 &separationFactor, const float2 &startBoidPosition, const float2 &targetBoidPosition, const float &distance)
 {
 	separationFactor.x += (startBoidPosition.x - targetBoidPosition.x) / distance;
 	separationFactor.y += (startBoidPosition.y - targetBoidPosition.y) / distance;
 }
 
-void Calculator::updateAlignmentFactor(float &alignmentFactor, const float3 &targetBoidPosition)
+void Calculator::updateAlignmentFactor(float &alignmentFactor, const float &targetBoidAngle)
 {
-	alignmentFactor += targetBoidPosition.z;
+	alignmentFactor += targetBoidAngle;
 }
 
-void Calculator::updateCohesionFactor(float2 &cohesionFactor, const float3 &targetBoidPosition)
+void Calculator::updateCohesionFactor(float2 &cohesionFactor, const float2 &targetBoidPosition)
 {
 	cohesionFactor.x += targetBoidPosition.x;
 	cohesionFactor.y += targetBoidPosition.y;
@@ -34,7 +34,7 @@ float Calculator::normalizeAngle(float &angle)
 float2 Calculator::getVectorFromAngle(float angle)
 {
 	float2 result;
-	float angleRad = angle * RADIAN_MULTIPLIER;
+	float angleRad = normalizeAngle(angle) * RADIAN_MULTIPLIER;
 
 	result.x = sin(angleRad);
 	result.y = cos(angleRad);
@@ -47,4 +47,27 @@ float Calculator::getAngleFromVector(float2 vector)
 	float angleRad = atanf(vector.x / vector.y);
 
 	return angleRad / RADIAN_MULTIPLIER;
+}
+
+float Calculator::calculateDistance(float2 startPoint, float2 targetPoint)
+{
+	float distX = targetPoint.x - startPoint.x;
+	distX *= distX;
+
+	float distY = targetPoint.y - startPoint.y;
+	distY *= distY;
+
+	return distX + distY;
+}
+
+float3 Calculator::getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector)
+{
+	float2 movement;
+
+	movement.x = separationVector.x + alignmentVector.x + cohesionVector.x;
+	movement.y = separationVector.y + alignmentVector.y + cohesionVector.y;
+	
+	float angle = getAngleFromVector(movement);
+
+	return make_float3(movement.x, movement.y, angle);
 }

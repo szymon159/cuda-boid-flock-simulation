@@ -36,6 +36,34 @@ void FlockSimulator::moveBoids()
 	size_t boidCount = _boids.size();
 	for (size_t i = 0; i < boidCount; i++)
 	{
-		_boids[i].move();
+		float2 separationVector;
+		float alignmentFactor = 0.0;
+		float2 cohesionVector;
+
+		for (size_t j = 0; j < boidCount; j++)
+		{
+			if (i == j)
+				continue;
+
+			float distance = Calculator::calculateDistance(_boids[i].getCoordinates(), _boids[j].getCoordinates());
+
+			Calculator::updateSeparationFactor(separationVector, _boids[i].getCoordinates(), _boids[j].getCoordinates(), distance);
+			Calculator::updateAlignmentFactor(alignmentFactor, _boids[j].getAngle());
+			Calculator::updateCohesionFactor(cohesionVector, _boids[j].getCoordinates());
+		}
+		boidCount--;
+
+		Calculator::normalizeVector(separationVector);
+
+		alignmentFactor = alignmentFactor / boidCount;
+		float2 alignmentVector = Calculator::getVectorFromAngle(alignmentFactor);
+
+		cohesionVector.x = cohesionVector.x / boidCount - _boids[i].getCoordinates().x;
+		cohesionVector.y = cohesionVector.y / boidCount - _boids[i].getCoordinates().y;
+		Calculator::normalizeVector(cohesionVector);
+		
+		float3 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector);
+
+		_boids[i].move(movement);
 	}
 }

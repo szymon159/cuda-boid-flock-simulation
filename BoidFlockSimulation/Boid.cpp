@@ -64,3 +64,8 @@ void Boid::move(float newX, float newY, float newAngle)
 
 	_position.z = newAngle;
 }
+
+void Boid::move(float3 newPosition)
+{
+	move(newPosition.x, newPosition.y, newPosition.z);
+}

@@ -23,4 +23,5 @@ public:
 	void move();
 	void move(float newX, float newY);
 	void move(float newX, float newY, float newAngle);
+	void move(float3 newPosition);
 };

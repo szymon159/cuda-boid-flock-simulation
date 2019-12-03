@@ -4,6 +4,7 @@
 
 #include "WindowSDL.h"
 #include "Boid.h"
+#include "Calculator.h"
 
 class FlockSimulator
 {
