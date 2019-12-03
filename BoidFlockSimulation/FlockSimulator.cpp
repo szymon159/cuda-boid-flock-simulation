@@ -66,15 +66,14 @@ void FlockSimulator::moveBoids()
 			Calculator::updateAlignmentFactor(alignmentFactor, _boids[j].getAngle());
 			Calculator::updateCohesionFactor(cohesionVector, _boids[j].getCoordinates());
 		}
-		boidCount--;
 
 		Calculator::normalizeVector(separationVector);
 
-		alignmentFactor = alignmentFactor / boidCount;
+		alignmentFactor = alignmentFactor / (boidCount - 1);
 		float2 alignmentVector = Calculator::getVectorFromAngle(alignmentFactor);
 
-		cohesionVector.x = cohesionVector.x / boidCount - _boids[i].getCoordinates().x;
-		cohesionVector.y = cohesionVector.y / boidCount - _boids[i].getCoordinates().y;
+		cohesionVector.x = cohesionVector.x / (boidCount - 1) - _boids[i].getCoordinates().x;
+		cohesionVector.y = cohesionVector.y / (boidCount - 1) - _boids[i].getCoordinates().y;
 		Calculator::normalizeVector(cohesionVector);
 		
 		float3 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector);

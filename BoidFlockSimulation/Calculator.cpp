@@ -44,9 +44,15 @@ float2 Calculator::getVectorFromAngle(float angle)
 
 float Calculator::getAngleFromVector(float2 vector)
 {
-	float angleRad = atanf(vector.x / vector.y);
+	normalizeVector(vector);
 
-	return angleRad / RADIAN_MULTIPLIER;
+	float angleRad = acosf(vector.x);
+	float angle = angleRad / RADIAN_MULTIPLIER;
+
+	if (vector.y < 0)
+		return 180 + angle;
+
+	return angle;
 }
 
 float Calculator::calculateDistance(float2 startPoint, float2 targetPoint)
@@ -66,7 +72,7 @@ float3 Calculator::getMovementFromFactors(float2 separationVector, float2 alignm
 
 	movement.x = separationVector.x + alignmentVector.x + cohesionVector.x;
 	movement.y = separationVector.y + alignmentVector.y + cohesionVector.y;
-	
+
 	float angle = getAngleFromVector(movement);
 
 	return make_float3(movement.x, movement.y, angle);
