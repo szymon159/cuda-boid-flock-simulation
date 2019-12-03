@@ -64,8 +64,9 @@ void WindowSDL::destroyWindow()
 int WindowSDL::addBoidToRenderer(Boid boid, int boidSize)
 {
 	SDL_Rect dstrect = { boid.getX(), boid.getY(), boidSize, boidSize };
+	SDL_RendererFlip flip = (SDL_RendererFlip)(SDL_FLIP_NONE);
 
-	if (SDL_RenderCopyEx(_renderer, _boidTexture, NULL, &dstrect, boid.getAngle(), NULL, SDL_FLIP_NONE) < 0)
+	if (SDL_RenderCopyEx(_renderer, _boidTexture, NULL, &dstrect, boid.getAngle(), NULL, flip) < 0)
 	{
 		printf("Unable to render boid! SDL_Error: %s \n", SDL_GetError());
 		return 1;

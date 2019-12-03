@@ -14,8 +14,8 @@ void FlockSimulator::generateBoids(int count)
 	for (int i = 0; i < count; i++)
 	{
 		addBoid(
-			rand() % (width - _boidSize) + _boidSize,
-			rand() % (height - _boidSize) + _boidSize,
+			rand() % width,
+			rand() % height,
 			rand() % 360 - 179
 		);
 	}
