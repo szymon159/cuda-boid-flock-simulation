@@ -33,7 +33,7 @@ int WindowSDL::initWindow()
 		printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 		return 1;
 	}
-	_renderer = SDL_CreateRenderer(_window, -1, 0);
+	_renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (_renderer == NULL)
 	{
 		printf("Window renderer could not be created! SDL_Error: %s\n", SDL_GetError());

@@ -6,6 +6,42 @@ FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize)
 
 }
 
+int FlockSimulator::run()
+{
+	// Main window loop
+	SDL_Event event;
+	int time = SDL_GetTicks();
+	int delay = 0;
+
+	while (true)
+	{
+		while (SDL_PollEvent(&event) != 0)
+		{
+			if (event.type == SDL_QUIT)
+			{
+				_window->destroyWindow();
+				return 0;
+			}
+		}
+
+		delay = SDL_GetTicks() - time;
+		printf("%d\n", delay);
+		if (update(delay))
+			return 1;
+		time = SDL_GetTicks();
+
+		if (drawBoids())
+			return 1;
+	}
+}
+
+int FlockSimulator::update(time_t delay)
+{
+	moveBoids(delay);
+
+	return 0;
+}
+
 void FlockSimulator::generateBoids(int count)
 {
 	int width = _window->getWidth();
@@ -46,9 +82,11 @@ int FlockSimulator::drawBoids()
 	return 0;
 }
 
-void FlockSimulator::moveBoids()
+void FlockSimulator::moveBoids(time_t delay)
 {
 	size_t boidCount = _boids.size();
+	float refreshRateCoeeficient = (float)delay / 16.0;
+
 	for (size_t i = 0; i < boidCount; i++)
 	{
 		float2 separationVector;
@@ -85,7 +123,7 @@ void FlockSimulator::moveBoids()
 		cohesionVector.y = cohesionVector.y / boidsSeen - _boids[i].getCoordinates().y;
 		Calculator::normalizeVector(cohesionVector);
 		
-		float3 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector);
+		float3 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
 
 		_boids[i].move(movement);
 	}

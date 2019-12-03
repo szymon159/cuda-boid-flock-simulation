@@ -17,9 +17,12 @@ private:
 public:
 	FlockSimulator(WindowSDL *window, int boidSize);
 
+	int run();
+	int update(time_t delay = 16);
+
 	void generateBoids(int count);
 
 	void addBoid(float x, float y, float angle = 0.0);
 	int drawBoids();
-	void moveBoids();
+	void moveBoids(time_t delay);
 };

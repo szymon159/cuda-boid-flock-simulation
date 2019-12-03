@@ -15,5 +15,5 @@ public:
 	static float getAngleFromVector(float2 vector);
 
 	static float calculateDistance(float2 startPoint, float2 targetPoint);
-	static float3 getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector);
+	static float3 getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector, float refreshRateCoeficient);
 };

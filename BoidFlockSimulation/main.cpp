@@ -20,23 +20,8 @@ int main(int argc, char *argv[])
 	FlockSimulator simulator(&window, BOID_SIZE);
 	simulator.generateBoids(150);
 
-	// Main window loop
-	SDL_Event event;
-	while (true)
-	{
-		while (SDL_PollEvent(&event) != 0)
-		{
-			if (event.type == SDL_QUIT)
-			{
-				window.destroyWindow();
-				return EXIT_SUCCESS;
-			}
-		}
+	if (simulator.run())
+		return EXIT_FAILURE;
 
-		SDL_Delay(50);
-		simulator.moveBoids();
-		simulator.drawBoids();
-	}
-
-	return EXIT_FAILURE;
+	return EXIT_SUCCESS;
 }

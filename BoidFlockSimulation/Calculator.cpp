@@ -68,15 +68,15 @@ float Calculator::calculateDistance(float2 startPoint, float2 targetPoint)
 	return distX + distY;
 }
 
-float3 Calculator::getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector)
+float3 Calculator::getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector, float refreshRateCoefficient)
 {
 	float2 movement;
 	float angle;
 	movement.x = 0;
 	movement.y = 0;
 	
-	movement.x = separationVector.x + alignmentVector.x + cohesionVector.x;
-	movement.y = separationVector.y + alignmentVector.y + cohesionVector.y;
+	movement.x = refreshRateCoefficient * (separationVector.x + alignmentVector.x + cohesionVector.x);
+	movement.y = refreshRateCoefficient * (separationVector.y + alignmentVector.y + cohesionVector.y);
 
 	if (movement.x != 0 || movement.y != 0)
 		angle = getAngleFromVector(movement);
