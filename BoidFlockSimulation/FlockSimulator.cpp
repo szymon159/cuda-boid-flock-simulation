@@ -35,7 +35,16 @@ int FlockSimulator::run()
 
 void FlockSimulator::update(float dt)
 {
+	// CPU
 	moveBoids(dt);
+	//
+
+	// TODO: GPU
+	// Mallocs etc
+	// Invoke kernel
+	// Sync threads
+	//
+
 }
 
 void FlockSimulator::generateBoids(int count)
