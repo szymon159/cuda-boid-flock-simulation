@@ -2,8 +2,8 @@
 
 void Calculator::updateSeparationFactor(float2 &separationFactor, const float2 &startBoidPosition, const float2 &targetBoidPosition, const float &distance)
 {
-	separationFactor.x += (startBoidPosition.x - targetBoidPosition.x) / distance;
-	separationFactor.y += (startBoidPosition.y - targetBoidPosition.y) / distance;
+	separationFactor.x += (startBoidPosition.x - targetBoidPosition.x);// / distance;
+	separationFactor.y += (startBoidPosition.y - targetBoidPosition.y);// / distance;
 }
 
 void Calculator::updateAlignmentFactor(float &alignmentFactor, const float &targetBoidAngle)

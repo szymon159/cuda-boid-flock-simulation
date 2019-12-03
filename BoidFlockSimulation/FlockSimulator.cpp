@@ -81,7 +81,7 @@ int FlockSimulator::drawBoids()
 void FlockSimulator::moveBoids(float dt)
 {
 	size_t boidCount = _boids.size();
-	float refreshRateCoeeficient = dt / 100;
+	float refreshRateCoeeficient = dt / 50;
 
 	for (size_t i = 0; i < boidCount; i++)
 	{
@@ -98,7 +98,7 @@ void FlockSimulator::moveBoids(float dt)
 
 			float distance = Calculator::calculateDistance(_boids[i].getCoordinates(), _boids[j].getCoordinates());
 
-			if (distance > 40000)
+			if (distance > 10000)
 				continue;
 
 			Calculator::updateSeparationFactor(separationVector, _boids[i].getCoordinates(), _boids[j].getCoordinates(), distance);
