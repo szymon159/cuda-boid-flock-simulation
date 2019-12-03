@@ -16,7 +16,7 @@ void FlockSimulator::generateBoids(int count)
 		addBoid(
 			rand() % (width - _boidSize) + _boidSize,
 			rand() % (height - _boidSize) + _boidSize,
-			rand() % 360
+			rand() % 360 - 179
 		);
 	}
 }
@@ -55,6 +55,8 @@ void FlockSimulator::moveBoids()
 		float alignmentFactor = 0.0;
 		float2 cohesionVector;
 
+		int boidsSeen = 0;
+
 		for (size_t j = 0; j < boidCount; j++)
 		{
 			if (i == j)
@@ -62,18 +64,25 @@ void FlockSimulator::moveBoids()
 
 			float distance = Calculator::calculateDistance(_boids[i].getCoordinates(), _boids[j].getCoordinates());
 
+			if (distance > 40000)
+				continue;
+
 			Calculator::updateSeparationFactor(separationVector, _boids[i].getCoordinates(), _boids[j].getCoordinates(), distance);
 			Calculator::updateAlignmentFactor(alignmentFactor, _boids[j].getAngle());
 			Calculator::updateCohesionFactor(cohesionVector, _boids[j].getCoordinates());
+
+			boidsSeen++;
 		}
+		if (boidsSeen == 0)
+			continue;
 
 		Calculator::normalizeVector(separationVector);
 
-		alignmentFactor = alignmentFactor / (boidCount - 1);
+		alignmentFactor = alignmentFactor / boidsSeen;
 		float2 alignmentVector = Calculator::getVectorFromAngle(alignmentFactor);
 
-		cohesionVector.x = cohesionVector.x / (boidCount - 1) - _boids[i].getCoordinates().x;
-		cohesionVector.y = cohesionVector.y / (boidCount - 1) - _boids[i].getCoordinates().y;
+		cohesionVector.x = cohesionVector.x / boidsSeen - _boids[i].getCoordinates().x;
+		cohesionVector.y = cohesionVector.y / boidsSeen - _boids[i].getCoordinates().y;
 		Calculator::normalizeVector(cohesionVector);
 		
 		float3 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector);

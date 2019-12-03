@@ -41,12 +41,12 @@ float Boid::getAngle()
 void Boid::move(float3 movement)
 {
 	float newX = _position.x + movement.x;
-	if (newX < _size / 2 || newX > _windowWidth - _size)
-		newX -= movement.x;
+	//if (newX <= 0 || newX >= _windowWidth)
+	//	return;
 
 	float newY = _position.y + movement.y;
-	if (newY < _size / 2 || newY > _windowHeight - _size)
-		newY -= movement.y;
+	//if (newY <= 0 || newY >= _windowHeight)
+	//	return;
 	
 	_position.x = newX;
 	_position.y = newY;

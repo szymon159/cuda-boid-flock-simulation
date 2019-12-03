@@ -5,9 +5,9 @@
 
 int BACKGROUND_COLOR[4] = { 0, 105, 148, 255 }; // Sea blue
 char *WINDOW_TITLE = "Boid Flock Simulation";
-int WINDOW_HEIGHT = 600;
-int WINDOW_WIDTH = 600;
-int BOID_SIZE = 30;
+int WINDOW_HEIGHT = 900;
+int WINDOW_WIDTH = 900;
+int BOID_SIZE = 60;
 
 int main(int argc, char *argv[])
 {
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 
 	FlockSimulator simulator(&window, BOID_SIZE);
-	simulator.generateBoids(15);
+	simulator.generateBoids(150);
 
 	// Main window loop
 	SDL_Event event;

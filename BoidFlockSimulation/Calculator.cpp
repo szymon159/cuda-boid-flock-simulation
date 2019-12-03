@@ -20,15 +20,17 @@ void Calculator::updateCohesionFactor(float2 &cohesionFactor, const float2 &targ
 float2 Calculator::normalizeVector(float2 &vector)
 {
 	float length = vector.x * vector.x + vector.y * vector.y;
-	vector.x *= vector.x / length;
-	vector.y *= vector.y / length;
+	length = sqrtf(length);
+
+	vector.x /= length;
+	vector.y /= length;
 
 	return vector;
 }
 
 float Calculator::normalizeAngle(float &angle)
 {
-	return (float)fmod(angle, 360);;
+	return (float)fmod(angle, 360);
 }
 
 float2 Calculator::getVectorFromAngle(float angle)
@@ -50,7 +52,7 @@ float Calculator::getAngleFromVector(float2 vector)
 	float angle = angleRad / RADIAN_MULTIPLIER;
 
 	if (vector.y < 0)
-		return 180 + angle;
+		return angle - 180;
 
 	return angle;
 }
