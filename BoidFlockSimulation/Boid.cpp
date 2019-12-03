@@ -11,8 +11,6 @@ Boid::Boid(int windowWidth, int windowHeight, int size, float x, float y, float 
 	_position.x = x;
 	_position.y = y;
 	_position.z = angle;
-
-	srand((int)time(0));
 }
 
 float3 Boid::getPosition()

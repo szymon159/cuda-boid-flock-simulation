@@ -11,16 +11,14 @@ int BOID_SIZE = 30;
 
 int main(int argc, char *argv[])
 {
+	srand((int)time(nullptr));
+
 	WindowSDL window(BACKGROUND_COLOR, WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 	if (window.initWindow())
 		return EXIT_FAILURE;
 
 	FlockSimulator simulator(&window, BOID_SIZE);
-	simulator.addBoid(20, 20, 225);
-	simulator.addBoid(540, 20, -45);
-	simulator.addBoid(20, 540, 135);
-	simulator.addBoid(540, 540, 45);
-	simulator.addBoid(290, 290, 0);
+	simulator.generateBoids(15);
 
 	// Main window loop
 	SDL_Event event;

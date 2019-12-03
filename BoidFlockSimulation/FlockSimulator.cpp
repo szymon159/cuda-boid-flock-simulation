@@ -6,6 +6,21 @@ FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize)
 
 }
 
+void FlockSimulator::generateBoids(int count)
+{
+	int width = _window->getWidth();
+	int height = _window->getHeight();
+
+	for (int i = 0; i < count; i++)
+	{
+		addBoid(
+			rand() % (width - _boidSize) + _boidSize,
+			rand() % (height - _boidSize) + _boidSize,
+			rand() % 360
+		);
+	}
+}
+
 void FlockSimulator::addBoid(float x, float y, float angle)
 {
 	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, angle);
