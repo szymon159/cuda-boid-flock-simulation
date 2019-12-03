@@ -52,7 +52,7 @@ float Calculator::getAngleFromVector(float2 vector)
 	float angle = angleRad / RADIAN_MULTIPLIER;
 
 	if (vector.y < 0)
-		return angle - 180;
+		return -angle;
 
 	return angle;
 }
@@ -72,8 +72,6 @@ float3 Calculator::getMovementFromFactors(float2 separationVector, float2 alignm
 {
 	float2 movement;
 	float angle;
-	movement.x = 0;
-	movement.y = 0;
 	
 	movement.x = refreshRateCoefficient * (separationVector.x + alignmentVector.x + cohesionVector.x);
 	movement.y = refreshRateCoefficient * (separationVector.y + alignmentVector.y + cohesionVector.y);
