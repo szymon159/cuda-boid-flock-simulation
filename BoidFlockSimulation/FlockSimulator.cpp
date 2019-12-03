@@ -15,6 +15,9 @@ int FlockSimulator::run()
 
 	while (true)
 	{
+		int dt = SDL_GetTicks() - time;
+		time += dt;
+
 		while (SDL_PollEvent(&event) != 0)
 		{
 			if (event.type == SDL_QUIT)
@@ -24,11 +27,9 @@ int FlockSimulator::run()
 			}
 		}
 
-		delay = SDL_GetTicks() - time;
-		printf("%d\n", delay);
-		if (update(delay))
+		printf("%d\n", dt);
+		if (update(dt))
 			return 1;
-		time = SDL_GetTicks();
 
 		if (drawBoids())
 			return 1;
