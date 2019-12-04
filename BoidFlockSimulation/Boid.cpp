@@ -5,8 +5,8 @@ Boid::Boid()
 
 }
 
-Boid::Boid(int windowWidth, int windowHeight, int size, float x, float y, float velocityX, float velocityY)
-	:_windowWidth(windowWidth), _windowHeight(windowHeight), _size(size)
+Boid::Boid(int windowWidth, int windowHeight, int size, float x, float y, float velocityX, float velocityY, float sightRange)
+	:_windowWidth(windowWidth), _windowHeight(windowHeight), _size(size), _sightRange(sightRange), _sightRangeSquared(sightRange * sightRange)
 {
 	_position.x = x;
 	_position.y = y;
@@ -37,6 +37,11 @@ int Boid::getY()
 float Boid::getAngle()
 {
 	return Calculator::getAngleFromVector(_velocity);
+}
+
+float Boid::getSightRangeSquared()
+{
+	return _sightRangeSquared;
 }
 
 void Boid::move()

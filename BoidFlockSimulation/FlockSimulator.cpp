@@ -47,7 +47,7 @@ void FlockSimulator::update(float dt)
 
 }
 
-void FlockSimulator::generateBoids(int count)
+void FlockSimulator::generateBoids(int count, float sightRange)
 {
 	int width = _window->getWidth();
 	int height = _window->getHeight();
@@ -57,15 +57,16 @@ void FlockSimulator::generateBoids(int count)
 		addBoid(
 			rand() % width,
 			rand() % height,
-			rand() % 360 - 179
+			rand() % 360 - 179,
+			sightRange
 		);
 	}
 }
 
-void FlockSimulator::addBoid(float x, float y, float angle)
+void FlockSimulator::addBoid(float x, float y, float angle, float sightRange)
 {
 	float2 velocity = Calculator::getVectorFromAngle(angle);
-	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, velocity.x, velocity.y);
+	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, velocity.x, velocity.y, sightRange);
 	_boids.push_back(newBoid);
 }
 
@@ -108,7 +109,7 @@ void FlockSimulator::moveBoids(float dt)
 
 			float distance = Calculator::calculateDistance(_boids[i].getPosition(), _boids[j].getPosition());
 
-			if (distance > 10000)
+			if (distance > _boids[i].getSightRangeSquared())
 				continue;
 
 			Calculator::updateSeparationFactor(separationVector, _boids[i].getPosition(), _boids[j].getPosition(), distance);

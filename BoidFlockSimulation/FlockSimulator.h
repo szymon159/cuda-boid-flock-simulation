@@ -20,9 +20,9 @@ public:
 	int run();
 	void update(float dt);
 
-	void generateBoids(int count);
+	void generateBoids(int count, float sightRange);
 
-	void addBoid(float x, float y, float angle = 0.0);
+	void addBoid(float x, float y, float angle, float sightRange);
 	int drawBoids();
 	void moveBoids(float dt);
 };
