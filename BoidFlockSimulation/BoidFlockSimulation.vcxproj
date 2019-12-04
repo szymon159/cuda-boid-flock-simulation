@@ -102,6 +102,7 @@
     <ClInclude Include="Calculator.h" />
     <ClInclude Include="FlockSimulator.h" />
     <ClInclude Include="includes.h" />
+    <ClInclude Include="kernel.h" />
     <ClInclude Include="WindowSDL.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

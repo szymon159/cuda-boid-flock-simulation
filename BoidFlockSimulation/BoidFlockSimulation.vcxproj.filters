@@ -16,5 +16,6 @@
     <ClInclude Include="Boid.h" />
     <ClInclude Include="FlockSimulator.h" />
     <ClInclude Include="Calculator.h" />
+    <ClInclude Include="kernel.h" />
   </ItemGroup>
 </Project>

@@ -20,6 +20,8 @@ public:
 	int run();
 	void update(float dt);
 
+	float3 *getBoidsArray();
+
 	void generateBoids(int count);
 
 	void addBoid(float x, float y, float angle = 0.0);

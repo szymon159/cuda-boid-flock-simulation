@@ -1,5 +1,7 @@
 #include "FlockSimulator.h"
 
+#include "kernel.h"
+
 FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize)
 	: _window(window), _boidSize(boidSize)
 {
@@ -41,10 +43,36 @@ void FlockSimulator::update(float dt)
 
 	// TODO: GPU
 	// Mallocs etc
+	float3 *h_boids = getBoidsArray();
+	float3 item = h_boids[0];
+	size_t size = sizeof(float3) * _boids.size();
+	__device__ float3 *d_boids = 0;
+	cudaMalloc((float3**)&d_boids, size);
+	cudaMemcpy(d_boids, h_boids, size, cudaMemcpyHostToDevice);
+
+	cudaSetDevice(0);
+	kernelWrapper(d_boids, size);
+	//moveKernel <<< 1, 50 >>> (d_boids, size);
+
+	cudaFree(d_boids);
+	free(h_boids);
 	// Invoke kernel
 	// Sync threads
 	//
 
+}
+
+float3 *FlockSimulator::getBoidsArray()
+{
+	//Free it some day ;)
+	float3 *result = (float3 *)malloc(_boids.size() * sizeof(float3));
+
+	for (int i = 0; i < _boids.size(); i++)
+	{
+		result[i] = _boids[i].getPosition();
+	}
+
+	return result;
 }
 
 void FlockSimulator::generateBoids(int count)
