@@ -34,6 +34,18 @@ int Boid::getY()
 	return (int)_position.y;
 }
 
+float Boid::getAngle()
+{
+	return Calculator::getAngleFromVector(_velocity);
+}
+
+void Boid::move()
+{
+	float2 movement = make_float2(0, 0);
+	
+	move(movement);
+}
+
 void Boid::move(float2 velocity)
 {
 	_velocity.x += velocity.x;

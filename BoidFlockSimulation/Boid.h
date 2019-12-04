@@ -2,6 +2,8 @@
 
 #include "includes.h"
 
+#include "Calculator.h"
+
 class Boid
 {
 private:
@@ -20,6 +22,8 @@ public:
 	float2 getVelocity();
 	int getX();
 	int getY();
+	float getAngle();
 
+	void move();
 	void move(float2 velocity);
 };

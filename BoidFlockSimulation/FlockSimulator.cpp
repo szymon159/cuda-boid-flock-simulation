@@ -64,7 +64,8 @@ void FlockSimulator::generateBoids(int count)
 
 void FlockSimulator::addBoid(float x, float y, float angle)
 {
-	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, angle);
+	float2 velocity = Calculator::getVectorFromAngle(angle);
+	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, velocity.x, velocity.y);
 	_boids.push_back(newBoid);
 }
 
@@ -90,12 +91,12 @@ int FlockSimulator::drawBoids()
 void FlockSimulator::moveBoids(float dt)
 {
 	size_t boidCount = _boids.size();
-	float refreshRateCoeeficient = dt / 50;
+	float refreshRateCoeeficient = dt / 1000;
 
 	for (size_t i = 0; i < boidCount; i++)
 	{
 		float2 separationVector;
-		float alignmentFactor = 0.0;
+		float2 alignmentVector;
 		float2 cohesionVector;
 
 		int boidsSeen = 0;
@@ -105,31 +106,36 @@ void FlockSimulator::moveBoids(float dt)
 			if (i == j)
 				continue;
 
-			float distance = Calculator::calculateDistance(_boids[i].getCoordinates(), _boids[j].getCoordinates());
+			float distance = Calculator::calculateDistance(_boids[i].getPosition(), _boids[j].getPosition());
 
 			if (distance > 10000)
 				continue;
 
-			Calculator::updateSeparationFactor(separationVector, _boids[i].getCoordinates(), _boids[j].getCoordinates(), distance);
-			Calculator::updateAlignmentFactor(alignmentFactor, _boids[j].getAngle());
-			Calculator::updateCohesionFactor(cohesionVector, _boids[j].getCoordinates());
+			Calculator::updateSeparationFactor(separationVector, _boids[i].getPosition(), _boids[j].getPosition(), distance);
+			Calculator::updateAlignmentFactor(alignmentVector, _boids[j].getVelocity());
+			Calculator::updateCohesionFactor(cohesionVector, _boids[j].getPosition());
 
 			boidsSeen++;
 		}
 		if (boidsSeen == 0)
+		{
+			_boids[i].move();
 			continue;
+		}
 
+		separationVector.x = -separationVector.x;
+		separationVector.y = -separationVector.x;
 		Calculator::normalizeVector(separationVector);
 
-		alignmentFactor = alignmentFactor / boidsSeen;
-		float2 alignmentVector = Calculator::getVectorFromAngle(alignmentFactor);
+		alignmentVector.x = 0.125 * alignmentVector.x / boidsSeen;
+		alignmentVector.y = 0.125 * alignmentVector.y / boidsSeen;
+		Calculator::normalizeVector(alignmentVector);
 
-		cohesionVector.x = cohesionVector.x / boidsSeen - _boids[i].getCoordinates().x;
-		cohesionVector.y = cohesionVector.y / boidsSeen - _boids[i].getCoordinates().y;
+		cohesionVector.x = 0.001 * (cohesionVector.x / boidsSeen - _boids[i].getPosition().x);
+		cohesionVector.y = 0.001 * (cohesionVector.y / boidsSeen - _boids[i].getPosition().y);
 		Calculator::normalizeVector(cohesionVector);
 		
-		float3 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
-
+		float2 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
 		_boids[i].move(movement);
 	}
 }

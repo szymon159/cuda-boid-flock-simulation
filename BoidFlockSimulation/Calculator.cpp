@@ -6,9 +6,10 @@ void Calculator::updateSeparationFactor(float2 &separationFactor, const float2 &
 	separationFactor.y += (startBoidPosition.y - targetBoidPosition.y);// / distance;
 }
 
-void Calculator::updateAlignmentFactor(float &alignmentFactor, const float &targetBoidAngle)
+void Calculator::updateAlignmentFactor(float2 &alignmentFactor, const float2 &targetBoidVelocity)
 {
-	alignmentFactor += targetBoidAngle;
+	alignmentFactor.x += targetBoidVelocity.x;
+	alignmentFactor.y += targetBoidVelocity.y;
 }
 
 void Calculator::updateCohesionFactor(float2 &cohesionFactor, const float2 &targetBoidPosition)
@@ -68,18 +69,20 @@ float Calculator::calculateDistance(float2 startPoint, float2 targetPoint)
 	return distX + distY;
 }
 
-float3 Calculator::getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector, float refreshRateCoefficient)
+float2 Calculator::getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector, float refreshRateCoefficient)
 {
 	float2 movement;
-	float angle;
+	//float angle;
 	
 	movement.x = refreshRateCoefficient * (separationVector.x + alignmentVector.x + cohesionVector.x);
 	movement.y = refreshRateCoefficient * (separationVector.y + alignmentVector.y + cohesionVector.y);
 
-	if (movement.x != 0 || movement.y != 0)
-		angle = getAngleFromVector(movement);
-	else
-		angle = 0;
+	//if (movement.x != 0 || movement.y != 0)
+	//	angle = getAngleFromVector(movement);
+	//else
+	//	angle = 0;
 
-	return make_float3(movement.x, movement.y, angle);
+	//return make_float3(movement.x, movement.y, angle);
+
+	return movement;
 }
