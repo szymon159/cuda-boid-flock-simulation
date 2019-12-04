@@ -17,14 +17,13 @@ private:
 public:
 	FlockSimulator(WindowSDL *window, int boidSize);
 
+	float3 *getBoidsArray();
+
 	int run();
 	void update(float dt);
 
-	float3 *getBoidsArray();
-
-	void generateBoids(int count);
-
-	void addBoid(float x, float y, float angle = 0.0);
+	void generateBoids(int count, float sightRange);
+	void addBoid(float x, float y, float angle, float sightRange);
 	int drawBoids();
 	void moveBoids(float dt);
 };

@@ -8,6 +8,8 @@ char *WINDOW_TITLE = "Boid Flock Simulation";
 int WINDOW_HEIGHT = 900;
 int WINDOW_WIDTH = 900;
 int BOID_SIZE = 60;
+int SIGHT_RANGE = 100;
+int BOID_COUNT = 100;
 
 int main(int argc, char *argv[])
 {
@@ -18,7 +20,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 
 	FlockSimulator simulator(&window, BOID_SIZE);
-	simulator.generateBoids(150);
+	simulator.generateBoids(BOID_COUNT, SIGHT_RANGE);
 
 	if (simulator.run())
 		return EXIT_FAILURE;

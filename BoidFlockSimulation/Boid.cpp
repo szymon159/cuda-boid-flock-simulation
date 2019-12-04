@@ -5,22 +5,23 @@ Boid::Boid()
 
 }
 
-Boid::Boid(int windowWidth, int windowHeight, int size, float x, float y, float angle)
-	:_windowWidth(windowWidth), _windowHeight(windowHeight), _size(size)
+Boid::Boid(int windowWidth, int windowHeight, int size, float x, float y, float velocityX, float velocityY, float sightRange)
+	:_windowWidth(windowWidth), _windowHeight(windowHeight), _size(size), _sightRange(sightRange), _sightRangeSquared(sightRange * sightRange)
 {
 	_position.x = x;
 	_position.y = y;
-	_position.z = angle;
+	_velocity.x = velocityX;
+	_velocity.y = velocityY;
 }
 
-float3 Boid::getPosition()
+float2 Boid::getPosition()
 {
 	return _position;
 }
 
-float2 Boid::getCoordinates()
+float2 Boid::getVelocity()
 {
-	return make_float2(_position.x, _position.y);
+	return _velocity;
 }
 
 int Boid::getX()
@@ -35,20 +36,26 @@ int Boid::getY()
 
 float Boid::getAngle()
 {
-	return _position.z;
+	return Calculator::getAngleFromVector(_velocity);
 }
 
-void Boid::move(float3 movement)
+float Boid::getSightRangeSquared()
 {
-	float newX = _position.x + movement.x;
-	//if (newX <= 0 || newX >= _windowWidth)
-	//	return;
+	return _sightRangeSquared;
+}
 
-	float newY = _position.y + movement.y;
-	//if (newY <= 0 || newY >= _windowHeight)
-	//	return;
+void Boid::move()
+{
+	float2 movement = make_float2(0, 0);
 	
-	_position.x = newX;
-	_position.y = newY;
-	_position.z = movement.z;
+	move(movement);
+}
+
+void Boid::move(float2 velocity)
+{
+	_velocity.x += velocity.x;
+	_velocity.y += velocity.y;
+
+	_position.x += _velocity.x;
+	_position.y += _velocity.y;
 }
