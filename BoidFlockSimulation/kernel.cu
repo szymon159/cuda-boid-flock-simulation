@@ -1,19 +1,64 @@
 #include "kernel.h"
 
+#include "Calculator.h"
+
 //cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size);
 
 
 // TODO: Rename
-__global__ void moveKernel(float3 *d_boids, size_t arraySize)
+__global__ void moveKernel(float3 *d_boids, size_t arraySize, float dt)
 {
-	float3 item = d_boids[0];
-	printf("Hello world: %f %f %f\n", item.x, item.y, item.z);
+	size_t boidCount = arraySize / sizeof(float3);
+	float refreshRateCoeeficient = dt / 50;
+
+	float2 separationVector;
+	float alignmentFactor = 0.0;
+	float2 cohesionVector;
+
+	int boidsSeen = 0;
+
+	int i = threadIdx.x;
+
+	for (size_t j = 0; j < boidCount; j++)
+	{
+		if (i == j)
+			continue;
+
+		float distance = Calculator::calculateDistance(make_float2(d_boids[i].x, d_boids[i].y), make_float2(d_boids[j].x, d_boids[j].y));
+
+		if (distance > 10000)
+			continue;
+
+		Calculator::updateSeparationFactor(separationVector, make_float2(d_boids[i].x, d_boids[i].y), make_float2(d_boids[j].x, d_boids[j].y), distance);
+		Calculator::updateAlignmentFactor(alignmentFactor, d_boids[j].z);
+		Calculator::updateCohesionFactor(cohesionVector, make_float2(d_boids[j].x, d_boids[j].y));
+
+		boidsSeen++;
+	}
+	if (boidsSeen == 0)
+		return;
+
+	Calculator::normalizeVector(separationVector);
+
+	alignmentFactor = alignmentFactor / boidsSeen;
+	float2 alignmentVector = Calculator::getVectorFromAngle(alignmentFactor);
+
+	cohesionVector.x = cohesionVector.x / boidsSeen - d_boids[i].x;
+	cohesionVector.y = cohesionVector.y / boidsSeen - d_boids[i].y;
+	Calculator::normalizeVector(cohesionVector);
+
+	float3 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
+
+	d_boids[i] = movement;
+
+	//float3 item = d_boids[0];
+	//printf("Hello world: %f %f %f\n", item.x, item.y, item.z);
 	//
 }
 
-void kernelWrapper(float3 *&d_boids, size_t &arraySize)
+void kernelWrapper(float3 *&d_boids, size_t &arraySize, float dt)
 {
-	moveKernel <<<1, 50>>>(d_boids, arraySize);
+	moveKernel <<<1, 50>>>(d_boids, arraySize, dt);
 }
 
 //int main()
