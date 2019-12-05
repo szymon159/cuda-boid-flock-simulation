@@ -64,6 +64,7 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <AdditionalOptions>--relocatable-device-code=true %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -85,6 +86,7 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <AdditionalOptions>--relocatable-device-code=true %(AdditionalOptions)</AdditionalOptions>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -94,6 +96,7 @@
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Calculator.cpp" />
     <ClCompile Include="FlockSimulator.cpp" />
+    <ClCompile Include="GPUCalculator.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="WindowSDL.cpp" />
   </ItemGroup>
@@ -101,6 +104,7 @@
     <ClInclude Include="Boid.h" />
     <ClInclude Include="Calculator.h" />
     <ClInclude Include="FlockSimulator.h" />
+    <ClInclude Include="GPUCalculator.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="kernel.h" />
     <ClInclude Include="WindowSDL.h" />

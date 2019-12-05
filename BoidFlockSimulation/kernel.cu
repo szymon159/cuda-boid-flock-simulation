@@ -1,11 +1,29 @@
 #include "kernel.h"
 
-#include "Calculator.h"
+#include "GPUCalculator.h"
 
 //cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size);
+//
+//void boidMoveKernelExecutor(float3 *&d_boids, size_t &arraySize, float dt)
+//{
+//	size_t boidCount = arraySize / sizeof(float3);
+//
+//	int blockCount = boidCount / 256;
+//	int threadsInBlockCount;
+//
+//	boidMoveKernel << <1, 50 >> > (d_boids, boidCount, dt);
+//}
 
+__device__ float2 getBoidPosition(float4 boidData)
+{
+	return make_float2(boidData.w, boidData.x);
+}
 
-// TODO: Rename
+__device__ float2 getBoidVelocity(float4 boidData)
+{
+	return make_float2(boidData.y, boidData.z);
+}
+
 __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 {
 	float refreshRateCoeeficient = dt / 1000;
@@ -13,8 +31,8 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 	//TODO: This is wrong index
 	int id = threadIdx.x;
 
-	float2 boidPosition = make_float2(d_boids[id].w, d_boids[id].x);
-	float2 boidVelocity = make_float2(d_boids[id].y, d_boids[id].z);
+	float2 boidPosition = getBoidPosition(d_boids[id]);
+	float2 boidVelocity = getBoidVelocity(d_boids[id]);
 
 	float2 separationVector;
 	float2 alignmentVector;
@@ -27,47 +45,48 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 		if (id == j)
 			continue;
 
-		float distance = Calculator::calculateDistance(boidPosition, _boids[j].getPosition());
+		float distance = GPUCalculator::calculateDistance(boidPosition, getBoidPosition(d_boids[j]));
 
-		if (distance > _boids[i].getSightRangeSquared())
+		// TODO: move sight range to flocksimulator class and then pass it to kernel
+		if (distance > 10000)
 			continue;
 
-		Calculator::updateSeparationFactor(separationVector, boidPosition, _boids[j].getPosition(), distance);
-		Calculator::updateAlignmentFactor(alignmentVector, _boids[j].getVelocity());
-		Calculator::updateCohesionFactor(cohesionVector, _boids[j].getPosition());
+		GPUCalculator::updateSeparationFactor(separationVector, boidPosition, getBoidPosition(d_boids[j]), distance);
+		GPUCalculator::updateAlignmentFactor(alignmentVector, getBoidVelocity(d_boids[j]));
+		GPUCalculator::updateCohesionFactor(cohesionVector, getBoidPosition(d_boids[j]));
 
 		boidsSeen++;
 	}
 	if (boidsSeen == 0)
 	{
-		_boids[i].move();
+		//_boids[i].move();
 		return;
 	}
 
 	separationVector.x = -separationVector.x;
 	separationVector.y = -separationVector.x;
-	Calculator::normalizeVector(separationVector);
+	GPUCalculator::normalizeVector(separationVector);
 
 	alignmentVector.x = 0.125 * alignmentVector.x / boidsSeen;
 	alignmentVector.y = 0.125 * alignmentVector.y / boidsSeen;
-	Calculator::normalizeVector(alignmentVector);
+	GPUCalculator::normalizeVector(alignmentVector);
 
-	cohesionVector.x = 0.001 * (cohesionVector.x / boidsSeen - _boids[i].getPosition().x);
-	cohesionVector.y = 0.001 * (cohesionVector.y / boidsSeen - _boids[i].getPosition().y);
-	Calculator::normalizeVector(cohesionVector);
+	cohesionVector.x = 0.001 * (cohesionVector.x / boidsSeen - boidPosition.x);
+	cohesionVector.y = 0.001 * (cohesionVector.y / boidsSeen - boidPosition.y);
+	GPUCalculator::normalizeVector(cohesionVector);
 
-	float2 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
-	_boids[i].move(movement);
+	float2 movement = GPUCalculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
+	//_boids[i].move(movement);
 }
 
-void moveKernelExecutor(float3 *&d_boids, size_t &arraySize, float dt)
+void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt)
 {
-	size_t boidCount = arraySize / sizeof(float3);
+	size_t boidCount = arraySize / sizeof(float4);
 
-	int blockCount = boidCount / 256
+	int blockCount = boidCount / 256;
 	int threadsInBlockCount;
 
-	boidMoveKernel <<<1, 50>>>(d_boids, boidCount, dt);
+	boidMoveKernel << <1, 50 >> > (d_boids, boidCount, dt);
 }
 
 //int main()

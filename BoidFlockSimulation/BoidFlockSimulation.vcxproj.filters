@@ -9,6 +9,7 @@
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="FlockSimulator.cpp" />
     <ClCompile Include="Calculator.cpp" />
+    <ClCompile Include="GPUCalculator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowSDL.h" />
@@ -17,5 +18,6 @@
     <ClInclude Include="FlockSimulator.h" />
     <ClInclude Include="Calculator.h" />
     <ClInclude Include="kernel.h" />
+    <ClInclude Include="GPUCalculator.h" />
   </ItemGroup>
 </Project>

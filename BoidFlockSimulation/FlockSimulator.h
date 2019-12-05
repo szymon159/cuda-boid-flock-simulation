@@ -17,7 +17,7 @@ private:
 public:
 	FlockSimulator(WindowSDL *window, int boidSize);
 
-	float3 *getBoidsArray();
+	float4 *getBoidsArray();
 
 	int run();
 	void update(float dt);
