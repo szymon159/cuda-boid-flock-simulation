@@ -1,6 +1,4 @@
-#include "kernel.h"
-
-#include "GPUCalculator.h"
+#include "kernel.cuh"
 
 //cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size);
 //
@@ -13,6 +11,64 @@
 //
 //	boidMoveKernel << <1, 50 >> > (d_boids, boidCount, dt);
 //}
+
+__device__ float calculateDistance(float2 startPoint, float2 targetPoint)
+{
+	float distX = targetPoint.x - startPoint.x;
+	distX *= distX;
+
+	float distY = targetPoint.y - startPoint.y;
+	distY *= distY;
+
+	return distX + distY;
+}
+
+__device__ void updateSeparationFactor(float2 &separationFactor, const float2 &startBoidPosition, const float2 &targetBoidPosition, const float &distance)
+{
+	separationFactor.x += (startBoidPosition.x - targetBoidPosition.x);// / distance;
+	separationFactor.y += (startBoidPosition.y - targetBoidPosition.y);// / distance;
+}
+
+__device__ void updateAlignmentFactor(float2 &alignmentFactor, const float2 &targetBoidVelocity)
+{
+	alignmentFactor.x += targetBoidVelocity.x;
+	alignmentFactor.y += targetBoidVelocity.y;
+}
+
+__device__ void updateCohesionFactor(float2 &cohesionFactor, const float2 &targetBoidPosition)
+{
+	cohesionFactor.x += targetBoidPosition.x;
+	cohesionFactor.y += targetBoidPosition.y;
+}
+
+__device__ float2 normalizeVector(float2 &vector)
+{
+	float length = vector.x * vector.x + vector.y * vector.y;
+	length = sqrtf(length);
+
+	vector.x /= length;
+	vector.y /= length;
+
+	return vector;
+}
+
+__device__ float2 getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector, float refreshRateCoefficient)
+{
+	float2 movement;
+	//float angle;
+
+	movement.x = refreshRateCoefficient * (separationVector.x + alignmentVector.x + cohesionVector.x);
+	movement.y = refreshRateCoefficient * (separationVector.y + alignmentVector.y + cohesionVector.y);
+
+	//if (movement.x != 0 || movement.y != 0)
+	//	angle = getAngleFromVector(movement);
+	//else
+	//	angle = 0;
+
+	//return make_float3(movement.x, movement.y, angle);
+
+	return movement;
+}
 
 __device__ float2 getBoidPosition(float4 boidData)
 {
@@ -45,15 +101,15 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 		if (id == j)
 			continue;
 
-		float distance = GPUCalculator::calculateDistance(boidPosition, getBoidPosition(d_boids[j]));
+		float distance = calculateDistance(boidPosition, getBoidPosition(d_boids[j]));
 
 		// TODO: move sight range to flocksimulator class and then pass it to kernel
 		if (distance > 10000)
 			continue;
 
-		GPUCalculator::updateSeparationFactor(separationVector, boidPosition, getBoidPosition(d_boids[j]), distance);
-		GPUCalculator::updateAlignmentFactor(alignmentVector, getBoidVelocity(d_boids[j]));
-		GPUCalculator::updateCohesionFactor(cohesionVector, getBoidPosition(d_boids[j]));
+		updateSeparationFactor(separationVector, boidPosition, getBoidPosition(d_boids[j]), distance);
+		updateAlignmentFactor(alignmentVector, getBoidVelocity(d_boids[j]));
+		updateCohesionFactor(cohesionVector, getBoidPosition(d_boids[j]));
 
 		boidsSeen++;
 	}
@@ -65,17 +121,17 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 
 	separationVector.x = -separationVector.x;
 	separationVector.y = -separationVector.x;
-	GPUCalculator::normalizeVector(separationVector);
+	normalizeVector(separationVector);
 
 	alignmentVector.x = 0.125 * alignmentVector.x / boidsSeen;
 	alignmentVector.y = 0.125 * alignmentVector.y / boidsSeen;
-	GPUCalculator::normalizeVector(alignmentVector);
+	normalizeVector(alignmentVector);
 
 	cohesionVector.x = 0.001 * (cohesionVector.x / boidsSeen - boidPosition.x);
 	cohesionVector.y = 0.001 * (cohesionVector.y / boidsSeen - boidPosition.y);
-	GPUCalculator::normalizeVector(cohesionVector);
+	normalizeVector(cohesionVector);
 
-	float2 movement = GPUCalculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
+	float2 movement = getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
 	//_boids[i].move(movement);
 }
 

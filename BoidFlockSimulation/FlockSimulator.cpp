@@ -1,5 +1,6 @@
 #include "FlockSimulator.h"
-#include "kernel.h"
+
+#include "kernel.cuh"
 
 FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize)
 	: _window(window), _boidSize(boidSize)
@@ -50,7 +51,7 @@ void FlockSimulator::update(float dt)
 	cudaMemcpy(d_boids, h_boids, size, cudaMemcpyHostToDevice);
 
 	cudaSetDevice(0);
-	boidMoveKernelExecutor(d_boids, size, dt);
+	//boidMoveKernelExecutor(d_boids, size, dt);
 	//moveKernel <<< 1, 50 >>> (d_boids, size);
 
 	cudaMemcpy(h_boids, d_boids, size, cudaMemcpyDeviceToHost);
