@@ -51,7 +51,7 @@ void FlockSimulator::update(float dt)
 	cudaMemcpy(d_boids, h_boids, size, cudaMemcpyHostToDevice);
 
 	cudaSetDevice(0);
-	kernelWrapper(d_boids, size, dt);
+	moveKernelExecutor(d_boids, size, dt);
 	//moveKernel <<< 1, 50 >>> (d_boids, size);
 
 	cudaMemcpy(h_boids, d_boids, size);

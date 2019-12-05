@@ -6,59 +6,68 @@
 
 
 // TODO: Rename
-__global__ void moveKernel(float3 *d_boids, size_t arraySize, float dt)
+__global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 {
-	size_t boidCount = arraySize / sizeof(float3);
-	float refreshRateCoeeficient = dt / 50;
+	float refreshRateCoeeficient = dt / 1000;
+	
+	//TODO: This is wrong index
+	int id = threadIdx.x;
+
+	float2 boidPosition = make_float2(d_boids[id].w, d_boids[id].x);
+	float2 boidVelocity = make_float2(d_boids[id].y, d_boids[id].z);
 
 	float2 separationVector;
-	float alignmentFactor = 0.0;
+	float2 alignmentVector;
 	float2 cohesionVector;
 
 	int boidsSeen = 0;
 
-	int i = threadIdx.x;
-
 	for (size_t j = 0; j < boidCount; j++)
 	{
-		if (i == j)
+		if (id == j)
 			continue;
 
-		float distance = Calculator::calculateDistance(make_float2(d_boids[i].x, d_boids[i].y), make_float2(d_boids[j].x, d_boids[j].y));
+		float distance = Calculator::calculateDistance(boidPosition, _boids[j].getPosition());
 
-		if (distance > 10000)
+		if (distance > _boids[i].getSightRangeSquared())
 			continue;
 
-		Calculator::updateSeparationFactor(separationVector, make_float2(d_boids[i].x, d_boids[i].y), make_float2(d_boids[j].x, d_boids[j].y), distance);
-		Calculator::updateAlignmentFactor(alignmentFactor, d_boids[j].z);
-		Calculator::updateCohesionFactor(cohesionVector, make_float2(d_boids[j].x, d_boids[j].y));
+		Calculator::updateSeparationFactor(separationVector, boidPosition, _boids[j].getPosition(), distance);
+		Calculator::updateAlignmentFactor(alignmentVector, _boids[j].getVelocity());
+		Calculator::updateCohesionFactor(cohesionVector, _boids[j].getPosition());
 
 		boidsSeen++;
 	}
 	if (boidsSeen == 0)
+	{
+		_boids[i].move();
 		return;
+	}
 
+	separationVector.x = -separationVector.x;
+	separationVector.y = -separationVector.x;
 	Calculator::normalizeVector(separationVector);
 
-	alignmentFactor = alignmentFactor / boidsSeen;
-	float2 alignmentVector = Calculator::getVectorFromAngle(alignmentFactor);
+	alignmentVector.x = 0.125 * alignmentVector.x / boidsSeen;
+	alignmentVector.y = 0.125 * alignmentVector.y / boidsSeen;
+	Calculator::normalizeVector(alignmentVector);
 
-	cohesionVector.x = cohesionVector.x / boidsSeen - d_boids[i].x;
-	cohesionVector.y = cohesionVector.y / boidsSeen - d_boids[i].y;
+	cohesionVector.x = 0.001 * (cohesionVector.x / boidsSeen - _boids[i].getPosition().x);
+	cohesionVector.y = 0.001 * (cohesionVector.y / boidsSeen - _boids[i].getPosition().y);
 	Calculator::normalizeVector(cohesionVector);
 
-	float3 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
-
-	d_boids[i] = movement;
-
-	//float3 item = d_boids[0];
-	//printf("Hello world: %f %f %f\n", item.x, item.y, item.z);
-	//
+	float2 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
+	_boids[i].move(movement);
 }
 
-void kernelWrapper(float3 *&d_boids, size_t &arraySize, float dt)
+void moveKernelExecutor(float3 *&d_boids, size_t &arraySize, float dt)
 {
-	moveKernel <<<1, 50>>>(d_boids, arraySize, dt);
+	size_t boidCount = arraySize / sizeof(float3);
+
+	int blockCount = boidCount / 256
+	int threadsInBlockCount;
+
+	boidMoveKernel <<<1, 50>>>(d_boids, boidCount, dt);
 }
 
 //int main()
