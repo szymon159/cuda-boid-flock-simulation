@@ -80,6 +80,19 @@ __device__ float2 getBoidVelocity(float4 boidData)
 	return make_float2(boidData.y, boidData.z);
 }
 
+__device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = make_float2(0,0))
+{
+	float4 result;
+
+	result.y = oldBoidData.y + movement.x;
+	result.z = oldBoidData.z + movement.y;
+
+	result.w = oldBoidData.w + result.y;
+	result.x = oldBoidData.x + result.z;
+
+	return result;
+}
+
 __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 {
 	float refreshRateCoeeficient = dt / 1000;
@@ -95,6 +108,8 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 	float2 cohesionVector;
 
 	int boidsSeen = 0;
+
+	float4 newBoidData;
 
 	for (size_t j = 0; j < boidCount; j++)
 	{
@@ -115,7 +130,7 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 	}
 	if (boidsSeen == 0)
 	{
-		//_boids[i].move();
+		newBoidData = getUpdatedBoidData(d_boids[id]);
 		return;
 	}
 
@@ -132,7 +147,7 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 	normalizeVector(cohesionVector);
 
 	float2 movement = getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
-	//_boids[i].move(movement);
+	newBoidData = getUpdatedBoidData(d_boids[id], movement);
 }
 
 void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt)
