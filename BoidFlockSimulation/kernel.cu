@@ -84,11 +84,11 @@ __device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = make_
 {
 	float4 result;
 
-	result.y = oldBoidData.y + movement.x;
-	result.z = oldBoidData.z + movement.y;
+	result.z = oldBoidData.z + movement.x;
+	result.w = oldBoidData.w + movement.y;
 
-	result.w = oldBoidData.w + result.y;
 	result.x = oldBoidData.x + result.z;
+	result.y = oldBoidData.y + result.w;
 
 	return result;
 }
@@ -98,7 +98,7 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 	float refreshRateCoeeficient = dt / 1000;
 	
 	//TODO: This is wrong index
-	int id = threadIdx.x;
+	int id = 0;
 
 	float2 boidPosition = getBoidPosition(d_boids[id]);
 	float2 boidVelocity = getBoidVelocity(d_boids[id]);
@@ -147,7 +147,13 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 	normalizeVector(cohesionVector);
 
 	float2 movement = getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
+
 	newBoidData = getUpdatedBoidData(d_boids[id], movement);
+
+	//printf("Old: %f %f %f %f\n", d_boids[id].x, d_boids[id].y, d_boids[id].z, d_boids[id].w);
+	//printf("New: %f %f %f %f\n\n", newBoidData.x, newBoidData.y, newBoidData.z, newBoidData.w);
+
+	d_boids[id] = newBoidData;
 }
 
 void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt)
@@ -157,7 +163,7 @@ void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt)
 	int blockCount = boidCount / 256;
 	int threadsInBlockCount;
 
-	boidMoveKernel << <1, 50 >> > (d_boids, boidCount, dt);
+	boidMoveKernel << <1, 1 >> > (d_boids, boidCount, dt);
 }
 
 //int main()

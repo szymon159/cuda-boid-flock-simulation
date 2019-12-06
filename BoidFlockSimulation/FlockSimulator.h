@@ -18,6 +18,7 @@ public:
 	FlockSimulator(WindowSDL *window, int boidSize);
 
 	float4 *getBoidsArray();
+	void updateBoidsPosition(float4 *boidsArray);
 
 	int run();
 	void update(float dt);

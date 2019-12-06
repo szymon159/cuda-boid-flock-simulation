@@ -30,4 +30,5 @@ public:
 
 	void move();
 	void move(float2 velocity);
+	void update(float4 newData);
 };

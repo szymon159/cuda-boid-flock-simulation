@@ -51,12 +51,17 @@ void FlockSimulator::update(float dt)
 	cudaMemcpy(d_boids, h_boids, size, cudaMemcpyHostToDevice);
 
 	cudaSetDevice(0);
-	//boidMoveKernelExecutor(d_boids, size, dt);
+	printf("CPU: %f %f %f %f\n", h_boids[0].x, h_boids[0].y, h_boids[0].z, h_boids[0].w);
+
+	boidMoveKernelExecutor(d_boids, size, dt);
 	//moveKernel <<< 1, 50 >>> (d_boids, size);
 
 	cudaMemcpy(h_boids, d_boids, size, cudaMemcpyDeviceToHost);
 
 	cudaFree(d_boids);
+
+	updateBoidsPosition(h_boids);
+
 	free(h_boids);
 	// Invoke kernel
 	// Sync threads
@@ -79,6 +84,15 @@ float4 *FlockSimulator::getBoidsArray()
 	}
 
 	return result;
+}
+
+void FlockSimulator::updateBoidsPosition(float4 *boidsArray)
+{
+	int boidsCount = _boids.size();
+	for (int i = 0; i < boidsCount; i++)
+	{
+		_boids[i].update(boidsArray[i]);
+	}
 }
 
 void FlockSimulator::generateBoids(int count, float sightRange)

@@ -59,3 +59,12 @@ void Boid::move(float2 velocity)
 	_position.x += _velocity.x;
 	_position.y += _velocity.y;
 }
+
+void Boid::update(float4 newData)
+{
+	_position.x = newData.x;
+	_position.y = newData.y;
+
+	_velocity.x = newData.z;
+	_velocity.y = newData.w;
+}
