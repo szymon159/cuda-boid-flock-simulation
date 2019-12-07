@@ -93,7 +93,7 @@ __device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = make_
 	return result;
 }
 
-__global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, float boidSightRangeSquared, int alreadyProcessedCount = 0)
+__global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, size_t boidCount, float dt, float boidSightRangeSquared, int alreadyProcessedCount = 0)
 {
 	float refreshRateCoeeficient = dt / 1000;
 	
@@ -107,8 +107,6 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, floa
 	float2 cohesionVector;
 
 	int boidsSeen = 0;
-
-	float4 newBoidData;
 
 	for (size_t j = 0; j < boidCount; j++)
 	{
@@ -128,7 +126,7 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, floa
 	}
 	if (boidsSeen == 0)
 	{
-		newBoidData = getUpdatedBoidData(d_boids[idx]);
+		d_boidsDoubleBuffer[idx] = getUpdatedBoidData(d_boids[idx]);
 		return;
 	}
 
@@ -146,15 +144,10 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, floa
 
 	float2 movement = getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
 
-	newBoidData = getUpdatedBoidData(d_boids[idx], movement);
-
-	//printf("Old: %f %f %f %f\n", d_boids[id].x, d_boids[id].y, d_boids[id].z, d_boids[id].w);
-	//printf("New: %f %f %f %f\n\n", newBoidData.x, newBoidData.y, newBoidData.z, newBoidData.w);
-
-	d_boids[idx] = newBoidData;
+	d_boidsDoubleBuffer[idx] = getUpdatedBoidData(d_boids[idx], movement);
 }
 
-void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt, float boidSightRangeSquared)
+void boidMoveKernelExecutor(float4 *&d_boids, float4 *&d_boidsDoubleBuffer, size_t &arraySize, float dt, float boidSightRangeSquared)
 {
 	size_t boidCount = arraySize / sizeof(float4);
 
@@ -168,7 +161,11 @@ void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt, float
 		boidMoveKernel << <blockCount, 256 >> > (d_boids, boidCount, dt, boidSightRangeSquared);
 
 	if (threadsInLastBlockCount > 0)
-		boidMoveKernel << <1, threadsInLastBlockCount >> > (d_boids, boidCount, dt, boidSightRangeSquared, alreadyProcessedCount);
+		boidMoveKernel << <1, threadsInLastBlockCount >> > (d_boids, d_boidsDoubleBuffer, boidCount, dt, boidSightRangeSquared, alreadyProcessedCount);
+
+	cudaThreadSynchronize();
+	
+	cudaMemcpy(d_boids, d_boidsDoubleBuffer, arraySize, cudaMemcpyDeviceToDevice);
 }
 
 //int main()

@@ -16,6 +16,7 @@ private:
 
 	float4 *h_boids;
 	__device__ float4 *d_boids;
+	__device__ float4 *d_boidsDoubleBuffer;
 	size_t _boidArrSize;
 
 	WindowSDL *_window;

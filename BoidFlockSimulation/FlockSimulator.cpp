@@ -17,8 +17,10 @@ int FlockSimulator::run()
 	float time = SDL_GetTicks();
 
 	h_boids = getBoidsArray();
+	
 	_boidArrSize = sizeof(float4) * _boids.size();
 	cudaMalloc((float4**)&d_boids, _boidArrSize);
+	cudaMalloc((float4**)&d_boidsDoubleBuffer, _boidArrSize);
 
 	while (true)
 	{
@@ -58,7 +60,7 @@ void FlockSimulator::update(float dt)
 	// GPU
 	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
 
-	boidMoveKernelExecutor(d_boids, _boidArrSize, dt, _boidSightRangeSquared);
+	boidMoveKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, dt, _boidSightRangeSquared);
 
 	cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
 
