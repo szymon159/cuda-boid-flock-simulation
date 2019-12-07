@@ -93,11 +93,11 @@ __device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = make_
 	return result;
 }
 
-__global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, float boidSightRangeSquared)
+__global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, float boidSightRangeSquared, int alreadyProcessedCount = 0)
 {
 	float refreshRateCoeeficient = dt / 1000;
 	
-	int idx = blockDim.x*blockIdx.x + threadIdx.x;
+	int idx = blockDim.x*blockIdx.x + threadIdx.x + alreadyProcessedCount;
 
 	float2 boidPosition = getBoidPosition(d_boids[idx]);
 	float2 boidVelocity = getBoidVelocity(d_boids[idx]);
@@ -162,11 +162,12 @@ void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt, float
 	// TODO: do this threads number calculations only once
 	int blockCount = boidCount >> 8;
 	int threadsInLastBlockCount = boidCount % 256;
+	int alreadyProcessedCount = boidCount - threadsInLastBlockCount;
 
 	if(blockCount > 0)
 		boidMoveKernel << <blockCount, 256 >> > (d_boids, boidCount, dt, boidSightRangeSquared);
 	if (threadsInLastBlockCount > 0)
-		boidMoveKernel << <1, threadsInLastBlockCount >> > (d_boids, boidCount, dt, boidSightRangeSquared);
+		boidMoveKernel << <1, threadsInLastBlockCount >> > (d_boids, boidCount, dt, boidSightRangeSquared, alreadyProcessedCount);
 }
 
 //int main()
