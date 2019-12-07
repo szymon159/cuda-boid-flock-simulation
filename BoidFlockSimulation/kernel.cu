@@ -97,11 +97,10 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, floa
 {
 	float refreshRateCoeeficient = dt / 1000;
 	
-	//TODO: This is wrong index
-	int id = 0;
+	int idx = blockDim.x*blockIdx.x + threadIdx.x;
 
-	float2 boidPosition = getBoidPosition(d_boids[id]);
-	float2 boidVelocity = getBoidVelocity(d_boids[id]);
+	float2 boidPosition = getBoidPosition(d_boids[idx]);
+	float2 boidVelocity = getBoidVelocity(d_boids[idx]);
 
 	float2 separationVector;
 	float2 alignmentVector;
@@ -113,7 +112,7 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, floa
 
 	for (size_t j = 0; j < boidCount; j++)
 	{
-		if (id == j)
+		if (idx == j)
 			continue;
 
 		float distance = calculateDistance(boidPosition, getBoidPosition(d_boids[j]));
@@ -129,7 +128,7 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, floa
 	}
 	if (boidsSeen == 0)
 	{
-		newBoidData = getUpdatedBoidData(d_boids[id]);
+		newBoidData = getUpdatedBoidData(d_boids[idx]);
 		return;
 	}
 
@@ -147,12 +146,12 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, floa
 
 	float2 movement = getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
 
-	newBoidData = getUpdatedBoidData(d_boids[id], movement);
+	newBoidData = getUpdatedBoidData(d_boids[idx], movement);
 
 	//printf("Old: %f %f %f %f\n", d_boids[id].x, d_boids[id].y, d_boids[id].z, d_boids[id].w);
 	//printf("New: %f %f %f %f\n\n", newBoidData.x, newBoidData.y, newBoidData.z, newBoidData.w);
 
-	d_boids[id] = newBoidData;
+	d_boids[idx] = newBoidData;
 }
 
 void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt, float boidSightRangeSquared)
@@ -161,13 +160,13 @@ void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt, float
 
 
 	// TODO: do this threads number calculations only once
-	boidCount = 550;
 	int blockCount = boidCount >> 8;
 	int threadsInLastBlockCount = boidCount % 256;
-	if (threadsInLastBlockCount > 0)
-		blockCount++;
 
-	boidMoveKernel << <1, 1 >> > (d_boids, boidCount, dt, boidSightRangeSquared);
+	if(blockCount > 0)
+		boidMoveKernel << <blockCount, 256 >> > (d_boids, boidCount, dt, boidSightRangeSquared);
+	if (threadsInLastBlockCount > 0)
+		boidMoveKernel << <1, threadsInLastBlockCount >> > (d_boids, boidCount, dt, boidSightRangeSquared);
 }
 
 //int main()
