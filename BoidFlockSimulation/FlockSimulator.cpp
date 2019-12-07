@@ -2,6 +2,8 @@
 
 #include "kernel.cuh"
 
+
+// TODO: Add destructors
 FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize, float boidSightRange)
 	: _window(window), _boidSize(boidSize), _boidSightRange(boidSightRange)
 {
@@ -14,6 +16,10 @@ int FlockSimulator::run()
 	SDL_Event event;
 	float time = SDL_GetTicks();
 
+	h_boids = getBoidsArray();
+	_boidArrSize = sizeof(float4) * _boids.size();
+	cudaMalloc((float4**)&d_boids, _boidArrSize);
+
 	while (true)
 	{
 		float dt = SDL_GetTicks() - time;
@@ -23,6 +29,8 @@ int FlockSimulator::run()
 		{
 			if (event.type == SDL_QUIT)
 			{
+				cudaFree(d_boids);
+				free(h_boids);
 				_window->destroyWindow();
 				return 0;
 			}
@@ -31,44 +39,34 @@ int FlockSimulator::run()
 		update(dt);
 
 		if (drawBoids())
+		{
+			cudaFree(d_boids);
+			free(h_boids);
+			_window->destroyWindow();
 			return 1;
+		}
 	}
 }
 
 void FlockSimulator::update(float dt)
 {
-	// CPU
+	//// CPU
 	//moveBoids(dt);
-	//
+	
 
-	// TODO: GPU
-	// Mallocs etc
-	float4 *h_boids = getBoidsArray();
-	size_t size = sizeof(float4) * _boids.size();
-	__device__ float4 *d_boids = 0;
-	cudaMalloc((float4**)&d_boids, size);
-	cudaMemcpy(d_boids, h_boids, size, cudaMemcpyHostToDevice);
 
-	cudaSetDevice(0);
+	// GPU
+	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
 
-	boidMoveKernelExecutor(d_boids, size, dt, _boidSightRangeSquared);
+	boidMoveKernelExecutor(d_boids, _boidArrSize, dt, _boidSightRangeSquared);
 
-	cudaMemcpy(h_boids, d_boids, size, cudaMemcpyDeviceToHost);
-
-	cudaFree(d_boids);
+	cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
 
 	updateBoidsPosition(h_boids);
-
-	free(h_boids);
-	// Invoke kernel
-	// Sync threads
-	//
-
 }
 
 float4 *FlockSimulator::getBoidsArray()
 {
-	//Free it some day ;)
 	float4 *result = (float4 *)malloc(_boids.size() * sizeof(float4));
 
 	for (int i = 0; i < _boids.size(); i++)

@@ -14,6 +14,10 @@ private:
 	float _boidSightRange;
 	float _boidSightRangeSquared;
 
+	float4 *h_boids;
+	__device__ float4 *d_boids;
+	size_t _boidArrSize;
+
 	WindowSDL *_window;
 
 public:
