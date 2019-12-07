@@ -158,7 +158,7 @@ void boidMoveKernelExecutor(float4 *&d_boids, float4 *&d_boidsDoubleBuffer, size
 	int alreadyProcessedCount = boidCount - threadsInLastBlockCount;
 
 	if(blockCount > 0)
-		boidMoveKernel << <blockCount, 256 >> > (d_boids, boidCount, dt, boidSightRangeSquared);
+		boidMoveKernel << <blockCount, 256 >> > (d_boids, d_boidsDoubleBuffer, boidCount, dt, boidSightRangeSquared);
 
 	if (threadsInLastBlockCount > 0)
 		boidMoveKernel << <1, threadsInLastBlockCount >> > (d_boids, d_boidsDoubleBuffer, boidCount, dt, boidSightRangeSquared, alreadyProcessedCount);

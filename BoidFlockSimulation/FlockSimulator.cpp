@@ -32,6 +32,7 @@ int FlockSimulator::run()
 			if (event.type == SDL_QUIT)
 			{
 				cudaFree(d_boids);
+				cudaFree(d_boidsDoubleBuffer);
 				free(h_boids);
 				_window->destroyWindow();
 				return 0;
@@ -43,6 +44,7 @@ int FlockSimulator::run()
 		if (drawBoids())
 		{
 			cudaFree(d_boids);
+			cudaFree(d_boidsDoubleBuffer);
 			free(h_boids);
 			_window->destroyWindow();
 			return 1;
