@@ -2,10 +2,10 @@
 
 #include "kernel.cuh"
 
-FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize)
-	: _window(window), _boidSize(boidSize)
+FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize, float boidSightRange)
+	: _window(window), _boidSize(boidSize), _boidSightRange(boidSightRange)
 {
-
+	_boidSightRangeSquared = _boidSightRange * _boidSightRange;
 }
 
 int FlockSimulator::run()
@@ -44,7 +44,6 @@ void FlockSimulator::update(float dt)
 	// TODO: GPU
 	// Mallocs etc
 	float4 *h_boids = getBoidsArray();
-	//float4 item = h_boids[0];
 	size_t size = sizeof(float4) * _boids.size();
 	__device__ float4 *d_boids = 0;
 	cudaMalloc((float4**)&d_boids, size);
@@ -53,8 +52,7 @@ void FlockSimulator::update(float dt)
 	cudaSetDevice(0);
 	printf("CPU: %f %f %f %f\n", h_boids[0].x, h_boids[0].y, h_boids[0].z, h_boids[0].w);
 
-	boidMoveKernelExecutor(d_boids, size, dt);
-	//moveKernel <<< 1, 50 >>> (d_boids, size);
+	boidMoveKernelExecutor(d_boids, size, dt, _boidSightRangeSquared);
 
 	cudaMemcpy(h_boids, d_boids, size, cudaMemcpyDeviceToHost);
 
@@ -95,7 +93,7 @@ void FlockSimulator::updateBoidsPosition(float4 *boidsArray)
 	}
 }
 
-void FlockSimulator::generateBoids(int count, float sightRange)
+void FlockSimulator::generateBoids(int count)
 {
 	int width = _window->getWidth();
 	int height = _window->getHeight();
@@ -105,16 +103,15 @@ void FlockSimulator::generateBoids(int count, float sightRange)
 		addBoid(
 			rand() % width,
 			rand() % height,
-			rand() % 360 - 179,
-			sightRange
+			rand() % 360 - 179
 		);
 	}
 }
 
-void FlockSimulator::addBoid(float x, float y, float angle, float sightRange)
+void FlockSimulator::addBoid(float x, float y, float angle)
 {
 	float2 velocity = Calculator::getVectorFromAngle(angle);
-	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, velocity.x, velocity.y, sightRange);
+	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, velocity.x, velocity.y);
 	_boids.push_back(newBoid);
 }
 
@@ -157,7 +154,7 @@ void FlockSimulator::moveBoids(float dt)
 
 			float distance = Calculator::calculateDistance(_boids[i].getPosition(), _boids[j].getPosition());
 
-			if (distance > _boids[i].getSightRangeSquared())
+			if (distance > _boidSightRangeSquared)
 				continue;
 
 			Calculator::updateSeparationFactor(separationVector, _boids[i].getPosition(), _boids[j].getPosition(), distance);

@@ -93,7 +93,7 @@ __device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = make_
 	return result;
 }
 
-__global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
+__global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt, float boidSightRangeSquared)
 {
 	float refreshRateCoeeficient = dt / 1000;
 	
@@ -118,8 +118,7 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 
 		float distance = calculateDistance(boidPosition, getBoidPosition(d_boids[j]));
 
-		// TODO: move sight range to flocksimulator class and then pass it to kernel
-		if (distance > 10000)
+		if (distance > boidSightRangeSquared)
 			continue;
 
 		updateSeparationFactor(separationVector, boidPosition, getBoidPosition(d_boids[j]), distance);
@@ -156,14 +155,19 @@ __global__ void boidMoveKernel(float4 *d_boids, size_t boidCount, float dt)
 	d_boids[id] = newBoidData;
 }
 
-void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt)
+void boidMoveKernelExecutor(float4 *&d_boids, size_t &arraySize, float dt, float boidSightRangeSquared)
 {
 	size_t boidCount = arraySize / sizeof(float4);
 
-	int blockCount = boidCount / 256;
-	int threadsInBlockCount;
 
-	boidMoveKernel << <1, 1 >> > (d_boids, boidCount, dt);
+	// TODO: do this threads number calculations only once
+	boidCount = 550;
+	int blockCount = boidCount >> 8;
+	int threadsInLastBlockCount = boidCount % 256;
+	if (threadsInLastBlockCount > 0)
+		blockCount++;
+
+	boidMoveKernel << <1, 1 >> > (d_boids, boidCount, dt, boidSightRangeSquared);
 }
 
 //int main()
