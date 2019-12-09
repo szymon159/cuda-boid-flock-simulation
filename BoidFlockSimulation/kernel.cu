@@ -72,12 +72,12 @@ __device__ float2 getMovementFromFactors(float2 separationVector, float2 alignme
 
 __device__ float2 getBoidPosition(float4 boidData)
 {
-	return make_float2(boidData.w, boidData.x);
+	return make_float2(boidData.x, boidData.y);
 }
 
 __device__ float2 getBoidVelocity(float4 boidData)
 {
-	return make_float2(boidData.y, boidData.z);
+	return make_float2(boidData.w, boidData.w);
 }
 
 __device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = make_float2(0,0))
