@@ -23,10 +23,10 @@ __device__ float calculateDistance(float2 startPoint, float2 targetPoint)
 	return distX + distY;
 }
 
-__device__ void updateSeparationFactor(float2 &separationFactor, const float2 &startBoidPosition, const float2 &targetBoidPosition, const float &distance)
+__device__ void updateSeparationFactor(float2 &separationFactor, const float2 &startBoidPosition, const float2 &targetBoidPosition)
 {
-	separationFactor.x += (startBoidPosition.x - targetBoidPosition.x);// / distance;
-	separationFactor.y += (startBoidPosition.y - targetBoidPosition.y);// / distance;
+	separationFactor.x += (startBoidPosition.x - targetBoidPosition.x);
+	separationFactor.y += (startBoidPosition.y - targetBoidPosition.y);
 }
 
 __device__ void updateAlignmentFactor(float2 &alignmentFactor, const float2 &targetBoidVelocity)
@@ -41,15 +41,24 @@ __device__ void updateCohesionFactor(float2 &cohesionFactor, const float2 &targe
 	cohesionFactor.y += targetBoidPosition.y;
 }
 
-__device__ float2 normalizeVector(float2 &vector)
+__device__ float2 normalizeVector(const float2 &vector)
 {
-	float length = vector.x * vector.x + vector.y * vector.y;
+	float2 result = vector;
+	if (fabs(vector.x) < 1e-8 || fabs(vector.y) < 1e-8)
+	{
+		result.x = vector.x * 1e8;
+		result.y = vector.y * 1e8;
+	}
+
+	float length = result.x * result.x + result.y * result.y;
 	length = sqrtf(length);
 
-	vector.x /= length;
-	vector.y /= length;
+	if (isnan(result.x / length) || isnan(result.y / length))
+	{
+		return { sqrtf(2) / 2.0, sqrtf(2) / 2.0 };
+	}
 
-	return vector;
+	return	{ result.x / length, result.y / length };
 }
 
 __device__ float2 getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector, float refreshRateCoefficient)
@@ -103,6 +112,8 @@ __global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, siz
 
 	float2 boidPosition = getBoidPosition(d_boids[idx]);
 	float2 boidVelocity = getBoidVelocity(d_boids[idx]);
+	//printf("Boid poistion %d: x = %f y = %f\n", idx, boidPosition.x, boidPosition.y);
+	//printf("Boid velocity %d: x = %f y = %f\n", idx, boidVelocity.x, boidVelocity.y);
 
 	float2 separationVector;
 	float2 alignmentVector;
@@ -120,7 +131,7 @@ __global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, siz
 		if (distance > boidSightRangeSquared)
 			continue;
 
-		updateSeparationFactor(separationVector, boidPosition, getBoidPosition(d_boids[j]), distance);
+		updateSeparationFactor(separationVector, boidPosition, getBoidPosition(d_boids[j]));
 		updateAlignmentFactor(alignmentVector, getBoidVelocity(d_boids[j]));
 		updateCohesionFactor(cohesionVector, getBoidPosition(d_boids[j]));
 
@@ -134,15 +145,15 @@ __global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, siz
 
 	separationVector.x = -separationVector.x;
 	separationVector.y = -separationVector.x;
-	normalizeVector(separationVector);
+	separationVector = normalizeVector(separationVector);
 
 	alignmentVector.x = 0.125 * alignmentVector.x / boidsSeen;
 	alignmentVector.y = 0.125 * alignmentVector.y / boidsSeen;
-	normalizeVector(alignmentVector);
+	alignmentVector = normalizeVector(alignmentVector);
 
 	cohesionVector.x = 0.001 * (cohesionVector.x / boidsSeen - boidPosition.x);
 	cohesionVector.y = 0.001 * (cohesionVector.y / boidsSeen - boidPosition.y);
-	normalizeVector(cohesionVector);
+	cohesionVector = normalizeVector(cohesionVector);
 
 	float2 movement = getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
 
@@ -165,7 +176,7 @@ void boidMoveKernelExecutor(float4 *&d_boids, float4 *&d_boidsDoubleBuffer, size
 	cudaThreadSynchronize();
 
 	cudaMemcpy(d_boids, d_boidsDoubleBuffer, arraySize, cudaMemcpyDeviceToDevice);
-	printf("-------------------------------\n");
+	//printf("-------------------------------\n");
 }
 
 //int main()

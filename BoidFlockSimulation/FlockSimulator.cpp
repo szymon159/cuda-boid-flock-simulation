@@ -10,6 +10,14 @@ FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize, float boidSightR
 	_boidSightRangeSquared = _boidSightRange * _boidSightRange;
 }
 
+FlockSimulator::~FlockSimulator()
+{
+	cudaFree(d_boids);
+	cudaFree(d_boidsDoubleBuffer);
+	free(h_boids);
+	_window->destroyWindow();
+}
+
 int FlockSimulator::run()
 {
 	// Main window loop
@@ -22,6 +30,8 @@ int FlockSimulator::run()
 	cudaMalloc((float4**)&d_boids, _boidArrSize);
 	cudaMalloc((float4**)&d_boidsDoubleBuffer, _boidArrSize);
 
+	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
+
 	while (true)
 	{
 		float dt = SDL_GetTicks() - time;
@@ -31,10 +41,6 @@ int FlockSimulator::run()
 		{
 			if (event.type == SDL_QUIT)
 			{
-				cudaFree(d_boids);
-				cudaFree(d_boidsDoubleBuffer);
-				free(h_boids);
-				_window->destroyWindow();
 				return 0;
 			}
 		}
@@ -43,10 +49,6 @@ int FlockSimulator::run()
 
 		if (drawBoids())
 		{
-			cudaFree(d_boids);
-			cudaFree(d_boidsDoubleBuffer);
-			free(h_boids);
-			_window->destroyWindow();
 			return 1;
 		}
 	}
@@ -60,13 +62,8 @@ void FlockSimulator::update(float dt)
 
 
 	// GPU
-	//TODO: Copy only once
-	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
-
 	boidMoveKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, dt, _boidSightRangeSquared);
-
 	cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
-
 	updateBoidsPosition(h_boids);
 }
 

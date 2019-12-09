@@ -23,6 +23,7 @@ private:
 
 public:
 	FlockSimulator(WindowSDL *window, int boidSize, float boidSightRange);
+	~FlockSimulator();
 
 	float4 *getBoidsArray();
 	void updateBoidsPosition(float4 *boidsArray);
