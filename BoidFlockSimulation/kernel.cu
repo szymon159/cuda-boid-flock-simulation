@@ -77,10 +77,10 @@ __device__ float2 getBoidPosition(float4 boidData)
 
 __device__ float2 getBoidVelocity(float4 boidData)
 {
-	return make_float2(boidData.w, boidData.w);
+	return make_float2(boidData.z, boidData.w);
 }
 
-__device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = make_float2(0,0))
+__device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = { 0,0 })
 {
 	float4 result;
 
@@ -93,11 +93,13 @@ __device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = make_
 	return result;
 }
 
-__global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, size_t boidCount, float dt, float boidSightRangeSquared, int alreadyProcessedCount = 0)
+__global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, size_t boidCount, float dt, float boidSightRangeSquared)
 {
-	float refreshRateCoeeficient = dt / 1000;
-	
-	int idx = blockDim.x*blockIdx.x + threadIdx.x + alreadyProcessedCount;
+	int idx = blockDim.x*blockIdx.x + threadIdx.x;
+	if (idx >= boidCount)
+		return;
+
+	float refreshRateCoeeficient = dt / 1000;	
 
 	float2 boidPosition = getBoidPosition(d_boids[idx]);
 	float2 boidVelocity = getBoidVelocity(d_boids[idx]);
@@ -151,21 +153,19 @@ void boidMoveKernelExecutor(float4 *&d_boids, float4 *&d_boidsDoubleBuffer, size
 {
 	size_t boidCount = arraySize / sizeof(float4);
 
-
 	// TODO: do this threads number calculations only once
-	int blockCount = boidCount >> 8;
-	int threadsInLastBlockCount = boidCount % 256;
-	int alreadyProcessedCount = boidCount - threadsInLastBlockCount;
+	int blockCount = boidCount / 256;
+	if (boidCount % 256 != 0)
+	{
+		blockCount++;
+	}
 
-	if(blockCount > 0)
-		boidMoveKernel << <blockCount, 256 >> > (d_boids, d_boidsDoubleBuffer, boidCount, dt, boidSightRangeSquared);
-
-	if (threadsInLastBlockCount > 0)
-		boidMoveKernel << <1, threadsInLastBlockCount >> > (d_boids, d_boidsDoubleBuffer, boidCount, dt, boidSightRangeSquared, alreadyProcessedCount);
+	boidMoveKernel<<<blockCount, 256>>>(d_boids, d_boidsDoubleBuffer, boidCount, dt, boidSightRangeSquared);
 
 	cudaThreadSynchronize();
-	
+
 	cudaMemcpy(d_boids, d_boidsDoubleBuffer, arraySize, cudaMemcpyDeviceToDevice);
+	printf("-------------------------------\n");
 }
 
 //int main()

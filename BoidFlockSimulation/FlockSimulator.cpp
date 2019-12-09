@@ -60,6 +60,7 @@ void FlockSimulator::update(float dt)
 
 
 	// GPU
+	//TODO: Copy only once
 	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
 
 	boidMoveKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, dt, _boidSightRangeSquared);
