@@ -1,9 +1,21 @@
 #include "FlockSimulator.h"
 
-FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize)
-	: _window(window), _boidSize(boidSize)
-{
+#include "kernel.cuh"
 
+
+// TODO: Add destructors
+FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize, float boidSightRange)
+	: _window(window), _boidSize(boidSize), _boidSightRange(boidSightRange)
+{
+	_boidSightRangeSquared = _boidSightRange * _boidSightRange;
+}
+
+FlockSimulator::~FlockSimulator()
+{
+	cudaFree(d_boids);
+	cudaFree(d_boidsDoubleBuffer);
+	free(h_boids);
+	_window->destroyWindow();
 }
 
 int FlockSimulator::run()
@@ -11,6 +23,14 @@ int FlockSimulator::run()
 	// Main window loop
 	SDL_Event event;
 	float time = SDL_GetTicks();
+
+	h_boids = getBoidsArray();
+	
+	_boidArrSize = sizeof(float4) * _boids.size();
+	cudaMalloc((float4**)&d_boids, _boidArrSize);
+	cudaMalloc((float4**)&d_boidsDoubleBuffer, _boidArrSize);
+
+	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
 
 	while (true)
 	{
@@ -21,7 +41,6 @@ int FlockSimulator::run()
 		{
 			if (event.type == SDL_QUIT)
 			{
-				_window->destroyWindow();
 				return 0;
 			}
 		}
@@ -29,25 +48,51 @@ int FlockSimulator::run()
 		update(dt);
 
 		if (drawBoids())
+		{
 			return 1;
+		}
 	}
 }
 
 void FlockSimulator::update(float dt)
 {
-	// CPU
-	moveBoids(dt);
-	//
+	//// CPU
+	//moveBoids(dt);
+	
 
-	// TODO: GPU
-	// Mallocs etc
-	// Invoke kernel
-	// Sync threads
-	//
 
+	// GPU
+	boidMoveKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, dt, _boidSightRangeSquared);
+	cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
+	updateBoidsPosition(h_boids);
 }
 
-void FlockSimulator::generateBoids(int count, float sightRange)
+float4 *FlockSimulator::getBoidsArray()
+{
+	float4 *result = (float4 *)malloc(_boids.size() * sizeof(float4));
+
+	for (int i = 0; i < _boids.size(); i++)
+	{
+		result[i] = make_float4(
+			_boids[i].getPosition().x,
+			_boids[i].getPosition().y,
+			_boids[i].getVelocity().x,
+			_boids[i].getVelocity().y);
+	}
+
+	return result;
+}
+
+void FlockSimulator::updateBoidsPosition(float4 *boidsArray)
+{
+	int boidsCount = _boids.size();
+	for (int i = 0; i < boidsCount; i++)
+	{
+		_boids[i].update(boidsArray[i]);
+	}
+}
+
+void FlockSimulator::generateBoids(int count)
 {
 	int width = _window->getWidth();
 	int height = _window->getHeight();
@@ -57,16 +102,15 @@ void FlockSimulator::generateBoids(int count, float sightRange)
 		addBoid(
 			rand() % width,
 			rand() % height,
-			rand() % 360 - 179,
-			sightRange
+			rand() % 360 - 179
 		);
 	}
 }
 
-void FlockSimulator::addBoid(float x, float y, float angle, float sightRange)
+void FlockSimulator::addBoid(float x, float y, float angle)
 {
 	float2 velocity = Calculator::getVectorFromAngle(angle);
-	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, velocity.x, velocity.y, sightRange);
+	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, velocity.x, velocity.y);
 	_boids.push_back(newBoid);
 }
 
@@ -109,7 +153,7 @@ void FlockSimulator::moveBoids(float dt)
 
 			float distance = Calculator::calculateDistance(_boids[i].getPosition(), _boids[j].getPosition());
 
-			if (distance > _boids[i].getSightRangeSquared())
+			if (distance > _boidSightRangeSquared)
 				continue;
 
 			Calculator::updateSeparationFactor(separationVector, _boids[i].getPosition(), _boids[j].getPosition(), distance);
