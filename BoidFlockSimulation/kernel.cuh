@@ -2,6 +2,7 @@
 #include "includes.h"
 
 #include "thrust/sort.h"
+#include "thrust/device_ptr.h"
 
 void moveBoidKernelExecutor(float4 *&d_boids, 
 							float4 *&d_boidsDoubleBuffer, 

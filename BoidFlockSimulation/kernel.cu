@@ -264,7 +264,7 @@ void initializeCellsKernelExecutor (float4 *&d_boids,
 	initializeCellsKernel << <blockCount, 256 >> > (d_boids, boidCount, d_boidId, d_cellId, gridWidth, cellSize);
 	cudaThreadSynchronize();
 
-	//thrust::sort_by_key()
+	thrust::sort_by_key(thrust::device_ptr<uint>(d_cellId), thrust::device_ptr<uint>(d_cellId + boidCount), thrust::device_ptr<uint>(d_boidId));
 
 	cudaMemset(d_cellBegin, -1, cellCount);
 	updateCellsBeginKernel << <blockCount, 256 >> > (boidCount, d_boidId, d_cellId, d_cellBegin, cellCount);
