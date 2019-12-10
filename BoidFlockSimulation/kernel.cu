@@ -102,18 +102,68 @@ __device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = { 0,0
 	return result;
 }
 
-__global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, size_t boidCount, float dt, float boidSightRangeSquared)
+__device__ int getCellId(float2 position, int gridWidth, int cellSize)
 {
-	int idx = blockDim.x*blockIdx.x + threadIdx.x;
-	if (idx >= boidCount)
+	int cellX = position.x / cellSize;
+	int cellY = position.y / cellSize;
+
+	return cellY * gridWidth + cellX;
+}
+
+__global__ void initializeCellsKernel ( float4 *d_boids,
+										size_t boidCount,
+										uint2 *d_boidCell,
+										int gridWidth,
+										int cellSize)
+{
+	int boidIdx = blockDim.x*blockIdx.x + threadIdx.x;
+	if (boidIdx >= boidCount)
 		return;
 
-	float refreshRateCoeeficient = dt / 1000;	
+	float2 boidPosition = getBoidPosition(d_boids[boidIdx]);
 
-	float2 boidPosition = getBoidPosition(d_boids[idx]);
-	float2 boidVelocity = getBoidVelocity(d_boids[idx]);
-	//printf("Boid poistion %d: x = %f y = %f\n", idx, boidPosition.x, boidPosition.y);
-	//printf("Boid velocity %d: x = %f y = %f\n", idx, boidVelocity.x, boidVelocity.y);
+	d_boidCell[boidIdx].x = getCellId(boidPosition, gridWidth, cellSize);
+	d_boidCell[boidIdx].y = boidIdx;
+}
+
+__global__ void updateCellsBeginKernel (size_t boidCount,
+										uint2* d_boidCell,
+										int *d_cellBegin,
+										int cellCount)
+{
+	int tId = blockDim.x*blockIdx.x + threadIdx.x;
+	if (tId >= boidCount || tId == 0)
+		return;
+
+	if (d_boidCell[tId].x > cellCount)
+		return;
+
+	if (d_boidCell[tId - 1].x < d_boidCell[tId].x)
+	{
+		d_cellBegin[d_boidCell[tId].x] = tId;
+	}
+}
+
+
+__global__ void moveBoidKernel (float4 *d_boids,
+								float4 *d_boidsDoubleBuffer,
+								size_t boidCount,
+								uint2 *d_boidCell,
+								uint2 *d_boidCellDoubleBuffer,
+								int *d_cellBegin,
+								float dt,
+								float boidSightRangeSquared)
+{
+	int tId = blockDim.x*blockIdx.x + threadIdx.x;
+	if (tId >= boidCount)
+		return;
+
+	float refreshRateCoeeficient = dt / 1000;
+	int cellId = d_boidCell[tId].x;
+	int boidIdx = d_boidCell[tId].y;
+
+	float2 boidPosition = getBoidPosition(d_boids[boidIdx]);
+	float2 boidVelocity = getBoidVelocity(d_boids[boidIdx]);
 
 	float2 separationVector;
 	float2 alignmentVector;
@@ -123,7 +173,7 @@ __global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, siz
 
 	for (size_t j = 0; j < boidCount; j++)
 	{
-		if (idx == j)
+		if (boidIdx == j)
 			continue;
 
 		float distance = calculateDistance(boidPosition, getBoidPosition(d_boids[j]));
@@ -139,7 +189,7 @@ __global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, siz
 	}
 	if (boidsSeen == 0)
 	{
-		d_boidsDoubleBuffer[idx] = getUpdatedBoidData(d_boids[idx]);
+		d_boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(d_boids[boidIdx]);
 		return;
 	}
 
@@ -157,10 +207,17 @@ __global__ void boidMoveKernel(float4 *d_boids, float4 *d_boidsDoubleBuffer, siz
 
 	float2 movement = getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
 
-	d_boidsDoubleBuffer[idx] = getUpdatedBoidData(d_boids[idx], movement);
+	d_boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(d_boids[boidIdx], movement);
 }
 
-void boidMoveKernelExecutor(float4 *&d_boids, float4 *&d_boidsDoubleBuffer, size_t &arraySize, float dt, float boidSightRangeSquared)
+void moveBoidKernelExecutor(float4 *&d_boids,
+							float4 *&d_boidsDoubleBuffer,
+							size_t &arraySize,
+							uint2 *&d_boidCell,
+							uint2 *&d_boidCellDoubleBuffer,
+							int *&d_cellBegin,
+							float dt,
+							float boidSightRangeSquared)
 {
 	size_t boidCount = arraySize / sizeof(float4);
 
@@ -171,13 +228,42 @@ void boidMoveKernelExecutor(float4 *&d_boids, float4 *&d_boidsDoubleBuffer, size
 		blockCount++;
 	}
 
-	boidMoveKernel<<<blockCount, 256>>>(d_boids, d_boidsDoubleBuffer, boidCount, dt, boidSightRangeSquared);
+	moveBoidKernel<<<blockCount, 256>>>(d_boids, d_boidsDoubleBuffer, boidCount, d_boidCell, d_boidCellDoubleBuffer, d_cellBegin, dt, boidSightRangeSquared);
 
 	cudaThreadSynchronize();
 
 	cudaMemcpy(d_boids, d_boidsDoubleBuffer, arraySize, cudaMemcpyDeviceToDevice);
 	//printf("-------------------------------\n");
 }
+
+void initializeCellsKernelExecutor (float4 *&d_boids,
+									size_t &boidArraySize,
+									uint2 *&d_boidCell,
+									int *&d_cellBegin,
+									int gridWidth,
+									int cellSize,
+									int cellCount)
+{
+	size_t boidCount = boidArraySize / sizeof(float4);
+
+	// TODO: do this threads number calculations only once
+	int blockCount = boidCount / 256;
+	if (boidCount % 256 != 0)
+	{
+		blockCount++;
+	}
+
+	initializeCellsKernel << <blockCount, 256 >> > (d_boids, boidCount, d_boidCell, gridWidth, cellSize);
+	cudaThreadSynchronize();
+
+	//sort
+
+	cudaMemset(d_cellBegin, -1, cellCount);
+	updateCellsBeginKernel << <blockCount, 256 >> > (boidCount, d_boidCell, d_cellBegin, cellCount);
+	cudaThreadSynchronize();
+}
+
+
 
 //int main()
 //{
