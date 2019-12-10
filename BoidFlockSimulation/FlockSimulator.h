@@ -17,8 +17,9 @@ private:
 	float4 *h_boids;
 	__device__ float4 *d_boids;
 	__device__ float4 *d_boidsDoubleBuffer;
-	__device__ uint2 *d_boidCell;
-	__device__ uint2 *d_boidCellDoubleBuffer;
+	__device__ uint *d_boidId;
+	__device__ uint *d_cellId;
+	__device__ uint *d_cellIdDoubleBuffer;
 	__device__ int *d_cellBegin;
 	size_t _boidArrSize;
 	size_t _gridWidth;
