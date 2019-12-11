@@ -107,16 +107,13 @@ __device__ int getCellId(float2 position, int gridWidth, int cellSize)
 	int cellX = position.x / cellSize;
 	int cellY = position.y / cellSize;
 
-	if (cellX < 0 || cellY < 0)
-		return -1;
-
 	return cellY * gridWidth + cellX;
 }
 
 __global__ void initializeCellsKernel ( float4 *d_boids,
 										size_t boidCount,
-										uint *d_boidId,
-										uint *d_cellId,
+										int *d_boidId,
+										int *d_cellId,
 										int gridWidth,
 										int cellSize)
 {
@@ -128,24 +125,30 @@ __global__ void initializeCellsKernel ( float4 *d_boids,
 
 	d_cellId[boidIdx] = getCellId(boidPosition, gridWidth, cellSize);
 	d_boidId[boidIdx] = boidIdx;
+
+	//printf("BoidId: %d, CellId: %d\n", d_boidId[boidIdx], d_cellId[boidIdx]);
 }
 
 __global__ void updateCellsBeginKernel (size_t boidCount,
-										uint *d_boidId,
-										uint *d_cellId,
+										int *d_boidId,
+										int *d_cellId,
 										int *d_cellBegin,
 										int cellCount)
 {
 	int tId = blockDim.x*blockIdx.x + threadIdx.x;
-	if (tId >= boidCount || tId == 0)
+	if (tId >= boidCount)
 		return;
 
-	if (d_cellId[tId] > cellCount)
+	//printf("BoidId: %d, CellId: %d\n", d_boidId[tId], d_cellId[tId]);
+
+	if (d_cellId[tId] < 0 || d_cellId[tId] > cellCount)
 		return;
 
-	if (d_cellId[tId - 1] < d_cellId[tId])
+	if (tId == 0 || d_cellId[tId - 1] < d_cellId[tId])
 	{
 		d_cellBegin[d_cellId[tId]] = tId;
+
+		//printf("CellId: %d BeginId: %d\n", d_cellId[tId], d_cellBegin[d_cellId[tId]]);
 	}
 }
 
@@ -153,10 +156,12 @@ __global__ void updateCellsBeginKernel (size_t boidCount,
 __global__ void moveBoidKernel (float4 *d_boids,
 								float4 *d_boidsDoubleBuffer,
 								size_t boidCount,
-								uint *d_boidId,
-								uint *d_cellId,
-								uint *d_cellIdDoubleBuffer,
+								int *d_boidId,
+								int *d_cellId,
+								int *d_cellIdDoubleBuffer,
 								int *d_cellBegin,
+								int gridWidth,
+								int cellSize,
 								float dt,
 								float boidSightRangeSquared)
 {
@@ -166,6 +171,9 @@ __global__ void moveBoidKernel (float4 *d_boids,
 
 	float refreshRateCoeeficient = dt / 1000;
 	int cellId = d_cellId[tId];
+	if (cellId < 0)
+		return;
+
 	int boidIdx = d_boidId[tId];
 
 	float2 boidPosition = getBoidPosition(d_boids[boidIdx]);
@@ -214,15 +222,22 @@ __global__ void moveBoidKernel (float4 *d_boids,
 	float2 movement = getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
 
 	d_boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(d_boids[boidIdx], movement);
+
+	uint newCellId = getCellId(getBoidPosition(d_boidsDoubleBuffer[boidIdx]), gridWidth, cellSize);
+	if (newCellId != cellId)
+		d_cellIdDoubleBuffer[tId] = newCellId;
 }
 
 void moveBoidKernelExecutor(float4 *&d_boids,
 							float4 *&d_boidsDoubleBuffer,
 							size_t &arraySize,
-							uint *&d_boidId,
-							uint *&d_cellId,
-							uint *&d_cellIdDoubleBuffer,
+							int *&d_boidId,
+							int *&d_cellId,
+							int *&d_cellIdDoubleBuffer,
 							int *&d_cellBegin,
+							int gridWidth,
+							int cellSize,
+							int cellCount,
 							float dt,
 							float boidSightRangeSquared)
 {
@@ -235,8 +250,13 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 		blockCount++;
 	}
 
-	moveBoidKernel<<<blockCount, 256>>>(d_boids, d_boidsDoubleBuffer, boidCount, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, dt, boidSightRangeSquared);
+	moveBoidKernel<<<blockCount, 256>>>(d_boids, d_boidsDoubleBuffer, boidCount, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, gridWidth, cellSize, dt, boidSightRangeSquared);
+	cudaThreadSynchronize();
 
+	cudaMemcpy(d_cellId, d_cellIdDoubleBuffer, boidCount, cudaMemcpyDeviceToDevice);
+	thrust::sort_by_key(thrust::device_ptr<int>(d_cellId), thrust::device_ptr<int>(d_cellId + boidCount), thrust::device_ptr<int>(d_boidId));
+	cudaMemset(d_cellBegin, -1, cellCount);
+	updateCellsBeginKernel << <blockCount, 256 >> > (boidCount, d_boidId, d_cellId, d_cellBegin, cellCount);
 	cudaThreadSynchronize();
 
 	cudaMemcpy(d_boids, d_boidsDoubleBuffer, arraySize, cudaMemcpyDeviceToDevice);
@@ -245,8 +265,8 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 
 void initializeCellsKernelExecutor (float4 *&d_boids,
 									size_t &boidArraySize,
-									uint *&d_boidId,
-									uint *&d_cellId,
+									int *&d_boidId,
+									int *&d_cellId,
 									int *&d_cellBegin,
 									int gridWidth,
 									int cellSize,
@@ -261,10 +281,14 @@ void initializeCellsKernelExecutor (float4 *&d_boids,
 		blockCount++;
 	}
 
+	//printf("BEFORE:\n");
+
 	initializeCellsKernel << <blockCount, 256 >> > (d_boids, boidCount, d_boidId, d_cellId, gridWidth, cellSize);
 	cudaThreadSynchronize();
 
-	thrust::sort_by_key(thrust::device_ptr<uint>(d_cellId), thrust::device_ptr<uint>(d_cellId + boidCount), thrust::device_ptr<uint>(d_boidId));
+	thrust::sort_by_key(thrust::device_ptr<int>(d_cellId), thrust::device_ptr<int>(d_cellId + boidCount), thrust::device_ptr<int>(d_boidId));
+
+	//printf("AFTER:\n");
 
 	cudaMemset(d_cellBegin, -1, cellCount);
 	updateCellsBeginKernel << <blockCount, 256 >> > (boidCount, d_boidId, d_cellId, d_cellBegin, cellCount);
