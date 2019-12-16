@@ -90,6 +90,11 @@ __device__ float4 getUpdatedBoidData(float4 oldBoidData, int windowWidth, int wi
 
 	result.z = oldBoidData.z + movement.x;
 	result.w = oldBoidData.w + movement.y;
+	if (result.z * result.z + result.w * result.w > 25)
+	{
+		result.z = oldBoidData.z;
+		result.w = oldBoidData.w;
+	}
 
 	result.x = fmodf(oldBoidData.x + result.z, windowWidth);
 	if (result.x < 0)
@@ -216,6 +221,7 @@ __global__ void moveBoidKernel (float4 *d_boids,
 		return;
 
 	float refreshRateCoeeficient = dt / 1000;
+	//printf("Refresh rate: %f\n", refreshRateCoeeficient);
 	int cellId = d_cellId[tId];
 	if (cellId < 0)
 		return;
@@ -262,23 +268,6 @@ __global__ void moveBoidKernel (float4 *d_boids,
 			boidsSeen++;
 		}
 	}
-	//free(neighCells);
-	//for (size_t j = 0; j < boidCount; j++)
-	//{
-	//	if (boidIdx == j)
-	//		continue;
-
-	//	float distance = calculateDistance(boidPosition, getBoidPosition(d_boids[j]));
-
-	//	if (distance > boidSightRangeSquared)
-	//		continue;
-
-	//	updateSeparationFactor(separationVector, boidPosition, getBoidPosition(d_boids[j]));
-	//	updateAlignmentFactor(alignmentVector, getBoidVelocity(d_boids[j]));
-	//	updateCohesionFactor(cohesionVector, getBoidPosition(d_boids[j]));
-
-	//	boidsSeen++;
-	//}
 	if (boidsSeen == 0)
 	{
 		d_boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(d_boids[boidIdx], windowWidth, windowHeight);
