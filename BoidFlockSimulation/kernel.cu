@@ -116,30 +116,40 @@ __device__ void getNeighbourCells(int cellId, int gridWidth, int gridHeight, int
 
 	int gridSize = gridWidth * gridHeight;
 
-	neighbourCells[neighbourCellsCount++] = cellId;
-	if (cellId != 0 && cellId % gridWidth != 0)
-		neighbourCells[neighbourCellsCount++] = cellId - 1; //west
-	if (cellId != gridSize && (cellId + 1) % gridWidth != 0)
-		neighbourCells[neighbourCellsCount++] = cellId + 1; //east
-
-	int nCellId = cellId - gridWidth;
-	if (nCellId >= 0)
+	int centerCellId;
+	for (int i = 0; i < 3; i++)
 	{
-		neighbourCells[neighbourCellsCount++] = nCellId; //north
-		if (nCellId != 0 && nCellId % gridWidth != 0)
-			neighbourCells[neighbourCellsCount++] = nCellId - 1; //north-west
-		if ((nCellId + 1) % gridWidth != 0)
-			neighbourCells[neighbourCellsCount++] = nCellId + 1; //north-east
-	}
+		//Center of current row
+		if (i == 0)
+		{
+			centerCellId = cellId;
+		}
+		else if (i == 1) //north
+		{
+			centerCellId = cellId - gridWidth;
+			if (centerCellId < 0)
+				continue;
+				//centerCellId += gridSize;
+		}
+		else if (i == 2) //south
+		{
+			centerCellId = cellId + gridWidth;
+			if (centerCellId >= gridSize)
+				continue;
+				//centerCellId -= gridSize;
+		}
 
-	int sCellId = cellId + gridWidth;
-	if (sCellId <= gridSize)
-	{
-		neighbourCells[neighbourCellsCount++] = sCellId; //south
-		if (sCellId % gridWidth != 0)
-			neighbourCells[neighbourCellsCount++] = sCellId - 1; //south-west
-		if (sCellId != gridSize && (sCellId + 1) % gridWidth != 0)
-			neighbourCells[neighbourCellsCount++] = sCellId + 1; //south-east	
+		neighbourCells[neighbourCellsCount++] = centerCellId; //middle
+
+		if (centerCellId % gridWidth != 0) //west
+			neighbourCells[neighbourCellsCount++] = centerCellId - 1;
+		//else
+		//	neighbourCells[neighbourCellsCount++] = centerCellId + gridWidth - 1;
+
+		if ((centerCellId + 1) % gridWidth != 0) //east
+			neighbourCells[neighbourCellsCount++] = centerCellId + 1;
+		//else
+		//	neighbourCells[neighbourCellsCount++] = centerCellId - gridWidth + 1;
 	}
 }
 
