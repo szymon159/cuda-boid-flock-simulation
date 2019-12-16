@@ -18,6 +18,10 @@ FlockSimulator::~FlockSimulator()
 {
 	cudaFree(d_boids);
 	cudaFree(d_boidsDoubleBuffer);
+	cudaFree(d_boidId);
+	cudaFree(d_cellId);	
+	cudaFree(d_cellIdDoubleBuffer);
+	cudaFree(d_cellBegin);
 	free(h_boids);
 	_window->destroyWindow();
 }
@@ -31,12 +35,13 @@ int FlockSimulator::run()
 	h_boids = getBoidsArray();
 	
 	_boidArrSize = sizeof(float4) * _boids.size();
+	size_t boidCellSize = sizeof(int) * _boids.size();
 	cudaMalloc((float4**)&d_boids, _boidArrSize);
 	cudaMalloc((float4**)&d_boidsDoubleBuffer, _boidArrSize);
-	cudaMalloc((int**)&d_boidId, _boidArrSize);
-	cudaMalloc((int**)&d_cellId, _boidArrSize);
-	cudaMalloc((int**)&d_cellIdDoubleBuffer, _boidArrSize);
-	cudaMalloc((int**)&d_cellBegin, _gridSize);
+	cudaMalloc((int**)&d_boidId, boidCellSize);
+	cudaMalloc((int**)&d_cellId, boidCellSize);
+	cudaMalloc((int**)&d_cellIdDoubleBuffer, boidCellSize);
+	cudaMalloc((int**)&d_cellBegin, sizeof(int) * _gridSize);
 
 	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
 	initializeCellsKernelExecutor(d_boids, _boidArrSize, d_boidId, d_cellId, d_cellBegin, _gridWidth, _boidSightRange, _gridSize);
@@ -71,7 +76,7 @@ void FlockSimulator::update(float dt)
 
 
 	// GPU
-	moveBoidKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _boidSightRange, _gridSize, dt, _boidSightRangeSquared);
+	moveBoidKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _gridHeight, _boidSightRange, _gridSize, dt, _boidSightRangeSquared);
 	cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
 	updateBoidsPosition(h_boids);
 }
