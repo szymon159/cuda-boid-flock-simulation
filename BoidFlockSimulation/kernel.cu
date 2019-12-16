@@ -44,11 +44,6 @@ __device__ void updateCohesionFactor(float2 &cohesionFactor, const float2 &targe
 __device__ float2 normalizeVector(const float2 &vector)
 {
 	float2 result = vector;
-	if (fabs(vector.x) < 1e-8 || fabs(vector.y) < 1e-8)
-	{
-		result.x = vector.x * 1e8;
-		result.y = vector.y * 1e8;
-	}
 
 	float length = result.x * result.x + result.y * result.y;
 	length = sqrtf(length);
@@ -89,15 +84,19 @@ __device__ float2 getBoidVelocity(float4 boidData)
 	return make_float2(boidData.z, boidData.w);
 }
 
-__device__ float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = { 0,0 })
+__device__ float4 getUpdatedBoidData(float4 oldBoidData, int windowWidth, int windowHeight, float2 movement = { 0,0 })
 {
 	float4 result;
 
 	result.z = oldBoidData.z + movement.x;
 	result.w = oldBoidData.w + movement.y;
 
-	result.x = oldBoidData.x + result.z;
-	result.y = oldBoidData.y + result.w;
+	result.x = fmodf(oldBoidData.x + result.z, windowWidth);
+	if (result.x < 0)
+		result.x += windowWidth;
+	result.y = fmodf(oldBoidData.y + result.w, windowHeight);
+	if (result.y < 0)
+		result.y += windowHeight;
 
 	return result;
 }
@@ -197,6 +196,8 @@ __global__ void moveBoidKernel (float4 *d_boids,
 								int gridWidth,
 								int gridHeight,
 								int cellSize,
+								int windowWidth,
+								int windowHeight,
 								float dt,
 								float boidSightRangeSquared)
 {
@@ -270,7 +271,7 @@ __global__ void moveBoidKernel (float4 *d_boids,
 	//}
 	if (boidsSeen == 0)
 	{
-		d_boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(d_boids[boidIdx]);
+		d_boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(d_boids[boidIdx], windowWidth, windowHeight);
 		d_cellIdDoubleBuffer[tId] = cellId;
 		return;
 	}
@@ -309,7 +310,7 @@ __global__ void moveBoidKernel (float4 *d_boids,
 
 	float2 movement = getMovementFromFactors(sumOfFactors, refreshRateCoeeficient);
 
-	d_boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(d_boids[boidIdx], movement);
+	d_boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(d_boids[boidIdx], windowWidth, windowHeight, movement);
 
 	uint newCellId = getCellId(getBoidPosition(d_boidsDoubleBuffer[boidIdx]), gridWidth, cellSize);
 	d_cellIdDoubleBuffer[tId] = newCellId;
@@ -327,6 +328,8 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 							int gridHeight,
 							int cellSize,
 							int cellCount,
+							int windowWidth,
+							int windowHeight,
 							float dt,
 							float boidSightRangeSquared)
 {
@@ -339,7 +342,7 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 		blockCount++;
 	}
 
-	moveBoidKernel<<<blockCount, 256>>>(d_boids, d_boidsDoubleBuffer, boidCount, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, gridWidth, gridHeight, cellSize, dt, boidSightRangeSquared);
+	moveBoidKernel<<<blockCount, 256>>>(d_boids, d_boidsDoubleBuffer, boidCount, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, gridWidth, gridHeight, cellSize, windowWidth, windowHeight, dt, boidSightRangeSquared);
 	cudaThreadSynchronize();
 
 	cudaMemcpy(d_cellId, d_cellIdDoubleBuffer, boidCount * sizeof(int), cudaMemcpyDeviceToDevice);

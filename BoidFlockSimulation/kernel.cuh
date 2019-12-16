@@ -16,6 +16,8 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 							int gridHeight,
 							int cellSize,
 							int cellCount,
+							int windowWidth,
+							int windowHeight,
 							float dt, 
 							float boidSightRangeSquared);
 
