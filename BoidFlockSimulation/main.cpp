@@ -5,11 +5,11 @@
 
 int BACKGROUND_COLOR[4] = { 0, 105, 148, 255 }; // Sea blue
 char *WINDOW_TITLE = "Boid Flock Simulation";
-int WINDOW_HEIGHT = 600;
-int WINDOW_WIDTH = 800;
-int BOID_SIZE = 64;
-float SIGHT_RANGE = 200;
-int BOID_COUNT = 5;
+int WINDOW_HEIGHT = 1080;
+int WINDOW_WIDTH = 1920;
+int BOID_SIZE = 16;
+float SIGHT_RANGE = 600;
+int BOID_COUNT = 30000;
 
 int main(int argc, char *argv[])
 {
@@ -19,8 +19,8 @@ int main(int argc, char *argv[])
 	if (window.initWindow())
 		return EXIT_FAILURE;
 
-	FlockSimulator simulator(&window, BOID_SIZE, SIGHT_RANGE);
-	simulator.generateBoids(BOID_COUNT);
+	FlockSimulator simulator(&window, BOID_COUNT, BOID_SIZE, SIGHT_RANGE);
+	//simulator.generateBoids(BOID_COUNT);
 
 	if (simulator.run())
 		return EXIT_FAILURE;

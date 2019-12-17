@@ -90,6 +90,94 @@ namespace Calculator
 		return result;
 	}
 
+	__device__ __host__ static int getCellId(float2 position, int gridWidth, int cellSize)
+	{
+		int cellX = (int)position.x / cellSize;
+		int cellY = (int)position.y / cellSize;
+
+		return cellY * gridWidth + cellX;
+	}
+
+	__device__ __host__ static void getNeighbourCells(int cellId, int gridWidth, int gridHeight, int(&neighbourCells)[9])
+	{
+		int neighbourCellsCount = 0;
+
+		int gridSize = gridWidth * gridHeight;
+		int overflowMultiplier = 1;
+
+		int centerCellId;
+		for (int i = 0; i < 3; i++)
+		{
+			//Center of current row
+			if (i == 0)
+			{
+				centerCellId = cellId;
+			}
+			else if (i == 1) //north
+			{
+				centerCellId = cellId - gridWidth;
+				if (centerCellId < 0)
+				{
+					centerCellId += gridSize;
+					overflowMultiplier = -1;
+				}
+			}
+			else if (i == 2) //south
+			{
+				centerCellId = cellId + gridWidth;
+				if (centerCellId >= gridSize)
+				{
+					centerCellId -= gridSize;
+					overflowMultiplier = -1;
+				}
+			}
+
+			neighbourCells[neighbourCellsCount++] = overflowMultiplier * centerCellId; //middle
+
+			if (centerCellId % gridWidth != 0) //west
+				neighbourCells[neighbourCellsCount++] = centerCellId - 1;
+			else
+				neighbourCells[neighbourCellsCount++] = -(centerCellId + gridWidth - 1);
+
+			if ((centerCellId + 1) % gridWidth != 0) //east
+				neighbourCells[neighbourCellsCount++] = centerCellId + 1;
+			else
+				neighbourCells[neighbourCellsCount++] = -(centerCellId - gridWidth + 1);
+
+			overflowMultiplier = 1;
+		}
+	}
+
+	__device__ __host__ static float2 getFakeBoidPosition(float2 boidPosition, int cellId, int neighCellId, int gridWidth, int gridHeight, int windowWidth, int windowHeight)
+	{
+		float2 result = boidPosition;
+
+		int cellX = cellId % gridWidth;
+		int cellY = cellId / gridWidth;
+
+		int neighCellX = neighCellId % gridWidth;
+		int neighCellY = neighCellId / gridWidth;
+
+
+		if (cellX != neighCellX)
+		{
+			if (cellX == 0)
+				result.x += windowWidth;
+			else if (cellX == gridWidth - 1)
+				result.x -= windowWidth;
+		}
+
+		if (cellY != neighCellY)
+		{
+			if (cellY == 0)
+				result.x += windowHeight;
+			else if (cellX == gridHeight - 1)
+				result.x -= windowHeight;
+		}
+
+		return result;
+	}
+
 	static float getAngleFromVector(float2 vector)
 	{
 		float2 normalized = normalizeVector(vector);

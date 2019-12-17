@@ -10,7 +10,8 @@ class FlockSimulator
 {
 private:
 	int _boidSize;
-	std::vector<Boid> _boids;
+	int _boidCount;
+	//std::vector<Boid> _boids;
 	float _boidSightRange;
 	float _boidSightRangeSquared;
 
@@ -29,17 +30,19 @@ private:
 	WindowSDL *_window;
 
 public:
-	FlockSimulator(WindowSDL *window, int boidSize, float boidSightRange);
+	FlockSimulator(WindowSDL *window, int boidCount, int boidSize, float boidSightRange);
 	~FlockSimulator();
 
-	float4 *getBoidsArray();
-	void updateBoidsPosition(float4 *boidsArray);
+	//float4 *getBoidsArray();
+	//void updateBoidsPosition(float4 *boidsArray);
 
 	int run();
 	void update(uint dt);
 
-	void generateBoids(int count);
-	void addBoid(float x, float y, float2 velocity);
+	//void addBoid(float x, float y, float2 velocity);
 	int drawBoids();
-	void moveBoids(float dt);
+	//void moveBoids(float dt);
+
+private:
+	void generateBoids();
 };
