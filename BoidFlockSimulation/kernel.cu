@@ -332,24 +332,24 @@ __global__ void moveBoidKernel (float4 *d_boids,
 		sumOfFactors.y += separationVector.y;
 	}
 
-	alignmentVector.x = 0.125 * alignmentVector.x / boidsSeen;
-	alignmentVector.y = 0.125 * alignmentVector.y / boidsSeen;
+	alignmentVector.x = alignmentVector.x / boidsSeen;
+	alignmentVector.y = alignmentVector.y / boidsSeen;
 	if (fabs(alignmentVector.x) > 1e-8 && fabs(alignmentVector.y) > 1e-8)
 	{
 		alignmentVector = normalizeVector(alignmentVector);
 
-		sumOfFactors.x += alignmentVector.x;
-		sumOfFactors.y += alignmentVector.y;
+		sumOfFactors.x += 0.125 * alignmentVector.x;
+		sumOfFactors.y += 0.125 * alignmentVector.y;
 	}
 
-	cohesionVector.x = 0.001 * (cohesionVector.x / boidsSeen - boidPosition.x);
-	cohesionVector.y = 0.001 * (cohesionVector.y / boidsSeen - boidPosition.y);
+	cohesionVector.x = (cohesionVector.x / boidsSeen - boidPosition.x);
+	cohesionVector.y = (cohesionVector.y / boidsSeen - boidPosition.y);
 	if (fabs(cohesionVector.x) > 1e-8 && fabs(cohesionVector.y) > 1e-8)
 	{
 		cohesionVector = normalizeVector(cohesionVector);
 
-		sumOfFactors.x += cohesionVector.x;
-		sumOfFactors.y += cohesionVector.y;
+		sumOfFactors.x += 0.001 * cohesionVector.x;
+		sumOfFactors.y += 0.001 * cohesionVector.y;
 	}
 
 	float2 movement = getMovementFromFactors(sumOfFactors, refreshRateCoeeficient);
