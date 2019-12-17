@@ -92,7 +92,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Boid.cpp" />
-    <ClCompile Include="Calculator.cpp" />
     <ClCompile Include="FlockSimulator.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="WindowSDL.cpp" />

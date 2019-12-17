@@ -149,52 +149,52 @@ int FlockSimulator::drawBoids()
 
 void FlockSimulator::moveBoids(float dt)
 {
-	size_t boidCount = _boids.size();
-	float refreshRateCoeeficient = dt / 1000;
+	//size_t boidCount = _boids.size();
+	//float refreshRateCoeeficient = dt / 1000;
 
-	for (size_t i = 0; i < boidCount; i++)
-	{
-		float2 separationVector;
-		float2 alignmentVector;
-		float2 cohesionVector;
+	//for (size_t i = 0; i < boidCount; i++)
+	//{
+	//	float2 separationVector;
+	//	float2 alignmentVector;
+	//	float2 cohesionVector;
 
-		int boidsSeen = 0;
+	//	int boidsSeen = 0;
 
-		for (size_t j = 0; j < boidCount; j++)
-		{
-			if (i == j)
-				continue;
+	//	for (size_t j = 0; j < boidCount; j++)
+	//	{
+	//		if (i == j)
+	//			continue;
 
-			float distance = Calculator::calculateDistance(_boids[i].getPosition(), _boids[j].getPosition());
+	//		float distance = Calculator::calculateDistance(_boids[i].getPosition(), _boids[j].getPosition());
 
-			if (distance > _boidSightRangeSquared)
-				continue;
+	//		if (distance > _boidSightRangeSquared)
+	//			continue;
 
-			Calculator::updateSeparationFactor(separationVector, _boids[i].getPosition(), _boids[j].getPosition(), distance);
-			Calculator::updateAlignmentFactor(alignmentVector, _boids[j].getVelocity());
-			Calculator::updateCohesionFactor(cohesionVector, _boids[j].getPosition());
+	//		Calculator::updateSeparationFactor(separationVector, _boids[i].getPosition(), _boids[j].getPosition());
+	//		Calculator::updateAlignmentFactor(alignmentVector, _boids[j].getVelocity());
+	//		Calculator::updateCohesionFactor(cohesionVector, _boids[j].getPosition());
 
-			boidsSeen++;
-		}
-		if (boidsSeen == 0)
-		{
-			_boids[i].move();
-			continue;
-		}
+	//		boidsSeen++;
+	//	}
+	//	if (boidsSeen == 0)
+	//	{
+	//		_boids[i].move();
+	//		continue;
+	//	}
 
-		separationVector.x = -separationVector.x;
-		separationVector.y = -separationVector.x;
-		Calculator::normalizeVector(separationVector);
+	//	separationVector.x = -separationVector.x;
+	//	separationVector.y = -separationVector.x;
+	//	Calculator::normalizeVector(separationVector);
 
-		alignmentVector.x = 0.125f * alignmentVector.x / boidsSeen;
-		alignmentVector.y = 0.125f * alignmentVector.y / boidsSeen;
-		Calculator::normalizeVector(alignmentVector);
+	//	alignmentVector.x = 0.125f * alignmentVector.x / boidsSeen;
+	//	alignmentVector.y = 0.125f * alignmentVector.y / boidsSeen;
+	//	Calculator::normalizeVector(alignmentVector);
 
-		cohesionVector.x = 0.001f * (cohesionVector.x / boidsSeen - _boids[i].getPosition().x);
-		cohesionVector.y = 0.001f * (cohesionVector.y / boidsSeen - _boids[i].getPosition().y);
-		Calculator::normalizeVector(cohesionVector);
-		
-		float2 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
-		_boids[i].move(movement);
-	}
+	//	cohesionVector.x = 0.001f * (cohesionVector.x / boidsSeen - _boids[i].getPosition().x);
+	//	cohesionVector.y = 0.001f * (cohesionVector.y / boidsSeen - _boids[i].getPosition().y);
+	//	Calculator::normalizeVector(cohesionVector);
+	//	
+	//	float2 movement = getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
+	//	_boids[i].move(movement);
+	//}
 }

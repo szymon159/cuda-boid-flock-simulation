@@ -5,11 +5,11 @@
 
 int BACKGROUND_COLOR[4] = { 0, 105, 148, 255 }; // Sea blue
 char *WINDOW_TITLE = "Boid Flock Simulation";
-int WINDOW_HEIGHT = 1080;
-int WINDOW_WIDTH = 1920;
-int BOID_SIZE = 16;
-int SIGHT_RANGE = 300;
-int BOID_COUNT = 30000;
+int WINDOW_HEIGHT = 600;
+int WINDOW_WIDTH = 800;
+int BOID_SIZE = 64;
+float SIGHT_RANGE = 200;
+int BOID_COUNT = 5;
 
 int main(int argc, char *argv[])
 {
