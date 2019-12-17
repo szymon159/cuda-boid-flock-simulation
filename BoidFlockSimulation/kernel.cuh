@@ -7,7 +7,7 @@
 
 void moveBoidKernelExecutor(float4 *&d_boids, 
 							float4 *&d_boidsDoubleBuffer, 
-							size_t &arraySize, 
+							uint &arraySize, 
 							int *&d_boidId,
 							int *&d_cellId,
 							int *&d_cellIdDoubleBuffer,
@@ -18,11 +18,11 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 							int cellCount,
 							int windowWidth,
 							int windowHeight,
-							float dt, 
+							uint dt, 
 							float boidSightRangeSquared);
 
 void initializeCellsKernelExecutor (float4 *&d_boids,
-									size_t &boidArraySize,
+									uint &boidArraySize,
 									int *&d_boidId,
 									int *&d_cellId,
 									int *&d_cellBegin,

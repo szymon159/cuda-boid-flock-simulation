@@ -50,7 +50,7 @@ __device__ float2 normalizeVector(const float2 &vector)
 
 	if (isnan(result.x / length) || isnan(result.y / length))
 	{
-		return { sqrtf(2) / 2.0, sqrtf(2) / 2.0 };
+		return { sqrtf(2) / 2.0f, sqrtf(2) / 2.0f };
 	}
 
 	return	{ result.x / length, result.y / length };
@@ -196,7 +196,7 @@ __device__ float2 getFakeBoidPosition(float2 boidPosition, int cellId, int neigh
 }
 
 __global__ void initializeCellsKernel ( float4 *d_boids,
-										size_t boidCount,
+										uint boidCount,
 										int *d_boidId,
 										int *d_cellId,
 										int gridWidth,
@@ -214,7 +214,7 @@ __global__ void initializeCellsKernel ( float4 *d_boids,
 	//printf("BoidId: %d, CellId: %d\n", d_boidId[boidIdx], d_cellId[boidIdx]);
 }
 
-__global__ void updateCellsBeginKernel (size_t boidCount,
+__global__ void updateCellsBeginKernel (uint boidCount,
 										int *d_boidId,
 										int *d_cellId,
 										int *d_cellBegin,
@@ -240,7 +240,7 @@ __global__ void updateCellsBeginKernel (size_t boidCount,
 
 __global__ void moveBoidKernel (float4 *d_boids,
 								float4 *d_boidsDoubleBuffer,
-								size_t boidCount,
+								uint boidCount,
 								int *d_boidId,
 								int *d_cellId,
 								int *d_cellIdDoubleBuffer,
@@ -250,14 +250,14 @@ __global__ void moveBoidKernel (float4 *d_boids,
 								int cellSize,
 								int windowWidth,
 								int windowHeight,
-								float dt,
+								uint dt,
 								float boidSightRangeSquared)
 {
 	int tId = blockDim.x*blockIdx.x + threadIdx.x;
 	if (tId >= boidCount)
 		return;
 
-	float refreshRateCoeeficient = dt / 1000;
+	float refreshRateCoeeficient = dt / 1000.0f;
 	//printf("Refresh rate: %f\n", refreshRateCoeeficient);
 	int cellId = d_cellId[tId];
 	if (cellId < 0)
@@ -363,7 +363,7 @@ __global__ void moveBoidKernel (float4 *d_boids,
 
 void moveBoidKernelExecutor(float4 *&d_boids,
 							float4 *&d_boidsDoubleBuffer,
-							size_t &arraySize,
+							uint &arraySize,
 							int *&d_boidId,
 							int *&d_cellId,
 							int *&d_cellIdDoubleBuffer,
@@ -374,10 +374,10 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 							int cellCount,
 							int windowWidth,
 							int windowHeight,
-							float dt,
+							uint dt,
 							float boidSightRangeSquared)
 {
-	size_t boidCount = arraySize / sizeof(float4);
+	uint boidCount = arraySize / sizeof(float4);
 
 	// TODO: do this threads number calculations only once
 	int blockCount = boidCount / 256;
@@ -401,7 +401,7 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 }
 
 void initializeCellsKernelExecutor (float4 *&d_boids,
-									size_t &boidArraySize,
+									uint &boidArraySize,
 									int *&d_boidId,
 									int *&d_cellId,
 									int *&d_cellBegin,
@@ -409,7 +409,7 @@ void initializeCellsKernelExecutor (float4 *&d_boids,
 									int cellSize,
 									int cellCount)
 {
-	size_t boidCount = boidArraySize / sizeof(float4);
+	uint boidCount = boidArraySize / sizeof(float4);
 
 	// TODO: do this threads number calculations only once
 	int blockCount = boidCount / 256;

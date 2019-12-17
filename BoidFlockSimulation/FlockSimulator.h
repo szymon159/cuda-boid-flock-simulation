@@ -21,10 +21,10 @@ private:
 	__device__ int *d_cellId;
 	__device__ int *d_cellIdDoubleBuffer;
 	__device__ int *d_cellBegin;
-	size_t _boidArrSize;
-	size_t _gridWidth;
-	size_t _gridHeight;
-	size_t _gridSize;
+	uint _boidArrSize;
+	uint _gridWidth;
+	uint _gridHeight;
+	uint _gridSize;
 
 	WindowSDL *_window;
 
@@ -36,10 +36,10 @@ public:
 	void updateBoidsPosition(float4 *boidsArray);
 
 	int run();
-	void update(float dt);
+	void update(uint dt);
 
 	void generateBoids(int count);
-	void addBoid(float x, float y, float angle);
+	void addBoid(float x, float y, float2 velocity);
 	int drawBoids();
 	void moveBoids(float dt);
 };

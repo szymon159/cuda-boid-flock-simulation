@@ -7,8 +7,8 @@
 FlockSimulator::FlockSimulator(WindowSDL *window, int boidSize, float boidSightRange)
 	: _window(window), _boidSize(boidSize), _boidSightRange(boidSightRange)
 {
-	_gridHeight = ceil((double)_window->getHeight() / (double)_boidSightRange);
-	_gridWidth = ceil((double)_window->getWidth() / (double)_boidSightRange);
+	_gridHeight = (uint)ceil(_window->getHeight() / _boidSightRange);
+	_gridWidth = (uint)ceil(_window->getWidth() / _boidSightRange);
 	_gridSize = _gridHeight * _gridWidth;
 
 	_boidSightRangeSquared = _boidSightRange * _boidSightRange;
@@ -30,11 +30,11 @@ int FlockSimulator::run()
 {
 	// Main window loop
 	SDL_Event event;
-	float time = SDL_GetTicks();
+	uint time = SDL_GetTicks();
 
 	h_boids = getBoidsArray();
 	
-	_boidArrSize = sizeof(float4) * _boids.size();
+	_boidArrSize = sizeof(float4) * (uint)_boids.size();
 	size_t boidCellSize = sizeof(int) * _boids.size();
 	cudaMalloc((float4**)&d_boids, _boidArrSize);
 	cudaMalloc((float4**)&d_boidsDoubleBuffer, _boidArrSize);
@@ -44,11 +44,11 @@ int FlockSimulator::run()
 	cudaMalloc((int**)&d_cellBegin, sizeof(int) * _gridSize);
 
 	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
-	initializeCellsKernelExecutor(d_boids, _boidArrSize, d_boidId, d_cellId, d_cellBegin, _gridWidth, _boidSightRange, _gridSize);
+	initializeCellsKernelExecutor(d_boids, _boidArrSize, d_boidId, d_cellId, d_cellBegin, _gridWidth, (int)_boidSightRange, _gridSize);
 
 	while (true)
 	{
-		float dt = SDL_GetTicks() - time;
+		uint dt = SDL_GetTicks() - time;
 		time += dt;
 
 		while (SDL_PollEvent(&event) != 0)
@@ -68,7 +68,7 @@ int FlockSimulator::run()
 	}
 }
 
-void FlockSimulator::update(float dt)
+void FlockSimulator::update(uint dt)
 {
 	//// CPU
 	//moveBoids(dt);
@@ -76,7 +76,7 @@ void FlockSimulator::update(float dt)
 
 
 	// GPU
-	moveBoidKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _gridHeight, _boidSightRange, _gridSize, _window->getWidth(), _window->getHeight(), dt, _boidSightRangeSquared);
+	moveBoidKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _gridHeight, (int)_boidSightRange, _gridSize, _window->getWidth(), _window->getHeight(), dt, _boidSightRangeSquared);
 	cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
 	updateBoidsPosition(h_boids);
 }
@@ -99,7 +99,7 @@ float4 *FlockSimulator::getBoidsArray()
 
 void FlockSimulator::updateBoidsPosition(float4 *boidsArray)
 {
-	int boidsCount = _boids.size();
+	size_t boidsCount = _boids.size();
 	for (int i = 0; i < boidsCount; i++)
 	{
 		_boids[i].update(boidsArray[i]);
@@ -114,16 +114,16 @@ void FlockSimulator::generateBoids(int count)
 	for (int i = 0; i < count; i++)
 	{
 		addBoid(
-			rand() % width,
-			rand() % height,
-			rand() % 360 - 179
+			(float)(rand() % width),
+			(float)(rand() % height),
+			{ 2.0f * rand() / (float)RAND_MAX - 1, 2.0f * rand() / (float)RAND_MAX }
 		);
 	}
 }
 
-void FlockSimulator::addBoid(float x, float y, float angle)
+void FlockSimulator::addBoid(float x, float y, float2 velocity)
 {
-	float2 velocity = Calculator::getVectorFromAngle(angle);
+	//float2 velocity = Calculator::getVectorFromAngle(angle);
 	Boid newBoid(_window->getWidth(), _window->getHeight(), _boidSize, x, y, velocity.x, velocity.y);
 	_boids.push_back(newBoid);
 }
@@ -186,12 +186,12 @@ void FlockSimulator::moveBoids(float dt)
 		separationVector.y = -separationVector.x;
 		Calculator::normalizeVector(separationVector);
 
-		alignmentVector.x = 0.125 * alignmentVector.x / boidsSeen;
-		alignmentVector.y = 0.125 * alignmentVector.y / boidsSeen;
+		alignmentVector.x = 0.125f * alignmentVector.x / boidsSeen;
+		alignmentVector.y = 0.125f * alignmentVector.y / boidsSeen;
 		Calculator::normalizeVector(alignmentVector);
 
-		cohesionVector.x = 0.001 * (cohesionVector.x / boidsSeen - _boids[i].getPosition().x);
-		cohesionVector.y = 0.001 * (cohesionVector.y / boidsSeen - _boids[i].getPosition().y);
+		cohesionVector.x = 0.001f * (cohesionVector.x / boidsSeen - _boids[i].getPosition().x);
+		cohesionVector.y = 0.001f * (cohesionVector.y / boidsSeen - _boids[i].getPosition().y);
 		Calculator::normalizeVector(cohesionVector);
 		
 		float2 movement = Calculator::getMovementFromFactors(separationVector, alignmentVector, cohesionVector, refreshRateCoeeficient);
