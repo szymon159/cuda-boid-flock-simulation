@@ -387,14 +387,14 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 	}
 
 	moveBoidKernel<<<blockCount, 256>>>(d_boids, d_boidsDoubleBuffer, boidCount, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, gridWidth, gridHeight, cellSize, windowWidth, windowHeight, dt, boidSightRangeSquared);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 
 	cudaMemcpy(d_cellId, d_cellIdDoubleBuffer, boidCount * sizeof(int), cudaMemcpyDeviceToDevice);
 	//_sleep(15);
 	thrust::sort_by_key(thrust::device_ptr<int>(d_cellId), thrust::device_ptr<int>(d_cellId + boidCount), thrust::device_ptr<int>(d_boidId));
 	cudaMemset(d_cellBegin, -1, cellCount* sizeof(int));
 	updateCellsBeginKernel << <blockCount, 256 >> > (boidCount, d_boidId, d_cellId, d_cellBegin, cellCount);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 
 	cudaMemcpy(d_boids, d_boidsDoubleBuffer, arraySize, cudaMemcpyDeviceToDevice);
 	//printf("-------------------------------\n");
@@ -421,7 +421,7 @@ void initializeCellsKernelExecutor (float4 *&d_boids,
 	//printf("BEFORE:\n");
 
 	initializeCellsKernel << <blockCount, 256 >> > (d_boids, boidCount, d_boidId, d_cellId, gridWidth, cellSize);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 
 	thrust::sort_by_key(thrust::device_ptr<int>(d_cellId), thrust::device_ptr<int>(d_cellId + boidCount), thrust::device_ptr<int>(d_boidId));
 
@@ -429,7 +429,7 @@ void initializeCellsKernelExecutor (float4 *&d_boids,
 
 	cudaMemset(d_cellBegin, -1, cellCount * sizeof(int));
 	updateCellsBeginKernel << <blockCount, 256 >> > (boidCount, d_boidId, d_cellId, d_cellBegin, cellCount);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 }
 
 
