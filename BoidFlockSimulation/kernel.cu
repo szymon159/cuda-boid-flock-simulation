@@ -13,9 +13,9 @@ __device__ int getCellId(float2 position, int gridWidth, int cellSize)
 	return cellY * gridWidth + cellX;
 }
 
-__device__ void getNeighbourCells(int cellId, int gridWidth, int gridHeight, int (&neighbourCells)[9], int &neighbourCellsCount)
+__device__ void getNeighbourCells(int cellId, int gridWidth, int gridHeight, int (&neighbourCells)[9])
 {
-	neighbourCellsCount = 0;
+	int neighbourCellsCount = 0;
 
 	int gridSize = gridWidth * gridHeight;
 	int overflowMultiplier = 1;
@@ -173,10 +173,9 @@ __global__ void moveBoidKernel (float4 *d_boids,
 	int boidsSeen = 0;
 
 	int neighCells[9];
-	int neighCellsCount;
-	getNeighbourCells(cellId, gridWidth, gridHeight, neighCells, neighCellsCount);
+	getNeighbourCells(cellId, gridWidth, gridHeight, neighCells);
 
-	for (int i = 0; i < neighCellsCount; i++)
+	for (int i = 0; i < 9; i++)
 	{
 		int neighCellId = neighCells[i];
 		float2 fakeBoidPosition = boidPosition;
