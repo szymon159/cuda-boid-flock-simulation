@@ -8,7 +8,7 @@ char *WINDOW_TITLE = "Boid Flock Simulation";
 int WINDOW_HEIGHT = 1080;
 int WINDOW_WIDTH = 1920;
 int BOID_SIZE = 16;
-int SIGHT_RANGE = 300;
+int SIGHT_RANGE = 200;
 int BOID_COUNT = 30000;
 
 int main(int argc, char *argv[])

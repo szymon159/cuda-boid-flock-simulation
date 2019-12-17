@@ -120,6 +120,7 @@ __device__ void getNeighbourCells(int cellId, int gridWidth, int gridHeight, int
 	neighbourCellsCount = 0;
 
 	int gridSize = gridWidth * gridHeight;
+	int overflowMultiplier = 1;
 
 	int centerCellId;
 	for (int i = 0; i < 3; i++)
@@ -133,29 +134,65 @@ __device__ void getNeighbourCells(int cellId, int gridWidth, int gridHeight, int
 		{
 			centerCellId = cellId - gridWidth;
 			if (centerCellId < 0)
-				continue;
-				//centerCellId += gridSize;
+			{
+				centerCellId += gridSize;
+				overflowMultiplier = -1;
+			}
 		}
 		else if (i == 2) //south
 		{
 			centerCellId = cellId + gridWidth;
 			if (centerCellId >= gridSize)
-				continue;
-				//centerCellId -= gridSize;
+			{
+				centerCellId -= gridSize;
+				overflowMultiplier = -1;
+			}
 		}
 
-		neighbourCells[neighbourCellsCount++] = centerCellId; //middle
+		neighbourCells[neighbourCellsCount++] = overflowMultiplier * centerCellId; //middle
 
 		if (centerCellId % gridWidth != 0) //west
 			neighbourCells[neighbourCellsCount++] = centerCellId - 1;
-		//else
-		//	neighbourCells[neighbourCellsCount++] = centerCellId + gridWidth - 1;
+		else
+			neighbourCells[neighbourCellsCount++] = -(centerCellId + gridWidth - 1);
 
 		if ((centerCellId + 1) % gridWidth != 0) //east
 			neighbourCells[neighbourCellsCount++] = centerCellId + 1;
-		//else
-		//	neighbourCells[neighbourCellsCount++] = centerCellId - gridWidth + 1;
+		else
+			neighbourCells[neighbourCellsCount++] = -(centerCellId - gridWidth + 1);
+
+		overflowMultiplier = 1;
 	}
+}
+
+__device__ float2 getFakeBoidPosition(float2 boidPosition, int cellId, int neighCellId, int gridWidth, int gridHeight, int windowWidth, int windowHeight)
+{
+	float2 result = boidPosition;
+
+	int cellX = cellId % gridWidth;
+	int cellY = cellId / gridWidth;
+
+	int neighCellX = neighCellId % gridWidth;
+	int neighCellY = neighCellId / gridWidth;
+
+
+	if (cellX != neighCellX)
+	{
+		if (cellX == 0)
+			result.x += windowWidth;
+		else if (cellX == gridWidth - 1)
+			result.x -= windowWidth;
+	}
+
+	if (cellY != neighCellY)
+	{
+		if (cellY == 0)
+			result.x += windowHeight;
+		else if (cellX == gridHeight - 1)
+			result.x -= windowHeight;
+	}
+
+	return result;
 }
 
 __global__ void initializeCellsKernel ( float4 *d_boids,
@@ -244,7 +281,15 @@ __global__ void moveBoidKernel (float4 *d_boids,
 	for (int i = 0; i < neighCellsCount; i++)
 	{
 		int neighCellId = neighCells[i];
+		float2 fakeBoidPosition = boidPosition;
+		if (neighCellId < 0)
+		{
+			neighCellId *= (-1);
+			fakeBoidPosition = getFakeBoidPosition(boidPosition, cellId, neighCellId, gridWidth, gridHeight, windowWidth, windowHeight);
+		}
+
 		int cellBegin = d_cellBegin[neighCellId];
+
 		//printf("cellId: %d, cellbegin: %d\n", neighCellId, cellBegin);
 
 		for (int j = cellBegin; j < boidCount; j++)
@@ -256,12 +301,12 @@ __global__ void moveBoidKernel (float4 *d_boids,
 			if (boidIdx == targetBoidIdx)
 				continue;
 
-			float distance = calculateDistance(boidPosition, getBoidPosition(d_boids[targetBoidIdx]));
+			float distance = calculateDistance(fakeBoidPosition, getBoidPosition(d_boids[targetBoidIdx]));
 
 			if (distance > boidSightRangeSquared)
 				continue;
 
-			updateSeparationFactor(separationVector, boidPosition, getBoidPosition(d_boids[targetBoidIdx]));
+			updateSeparationFactor(separationVector, fakeBoidPosition, getBoidPosition(d_boids[targetBoidIdx]));
 			updateAlignmentFactor(alignmentVector, getBoidVelocity(d_boids[targetBoidIdx]));
 			updateCohesionFactor(cohesionVector, getBoidPosition(d_boids[targetBoidIdx]));
 
