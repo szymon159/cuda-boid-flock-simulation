@@ -8,7 +8,6 @@
     <ClCompile Include="WindowSDL.cpp" />
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="FlockSimulator.cpp" />
-    <ClCompile Include="Calculator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowSDL.h" />
@@ -17,5 +16,6 @@
     <ClInclude Include="FlockSimulator.h" />
     <ClInclude Include="Calculator.h" />
     <ClInclude Include="kernel.cuh" />
+    <ClInclude Include="Threads.h" />
   </ItemGroup>
 </Project>

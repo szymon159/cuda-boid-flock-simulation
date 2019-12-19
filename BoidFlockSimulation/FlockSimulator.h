@@ -9,30 +9,40 @@
 class FlockSimulator
 {
 private:
-	int _boidSize;
-	std::vector<Boid> _boids;
-	float _boidSightRange;
-	float _boidSightRangeSquared;
+	//int _boidSize;
+	//int _boidCount;
+	//std::vector<Boid> _boids;
+	/*float _boidSightRange;
+	float _boidSightRangeSquared;*/
 
 	float4 *h_boids;
 	__device__ float4 *d_boids;
 	__device__ float4 *d_boidsDoubleBuffer;
-	size_t _boidArrSize;
+	__device__ int *d_boidId;
+	__device__ int *d_cellId;
+	__device__ int *d_cellIdDoubleBuffer;
+	__device__ int *d_cellBegin;
+	uint _boidArrSize;
+	uint _gridWidth;
+	uint _gridHeight;
+	uint _gridSize;
 
 	WindowSDL *_window;
 
 public:
-	FlockSimulator(WindowSDL *window, int boidSize, float boidSightRange);
+	FlockSimulator(WindowSDL *window);
 	~FlockSimulator();
 
-	float4 *getBoidsArray();
-	void updateBoidsPosition(float4 *boidsArray);
+	//float4 *getBoidsArray();
+	//void updateBoidsPosition(float4 *boidsArray);
 
-	int run();
-	void update(float dt);
+	int run(float *runTime, uint *framesGenerated);
+	void update(uint dt);
 
-	void generateBoids(int count);
-	void addBoid(float x, float y, float angle);
+	//void addBoid(float x, float y, float2 velocity);
 	int drawBoids();
-	void moveBoids(float dt);
+	//void moveBoids(float dt);
+
+private:
+	void generateBoids();
 };
