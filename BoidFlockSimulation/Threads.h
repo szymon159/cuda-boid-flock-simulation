@@ -70,7 +70,6 @@ namespace Threads
 			float2 fakeBoidPosition = boidPosition;
 			if (neighCellId < 0)
 			{
-				continue;
 				neighCellId *= (-1);
 				fakeBoidPosition = getFakeBoidPosition(boidPosition, cellId, neighCellId, gridWidth, gridHeight);
 			}
