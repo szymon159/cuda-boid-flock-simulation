@@ -98,7 +98,7 @@ void FlockSimulator::update(uint dt)
 
 
 	// GPU
-	moveBoidKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _gridHeight, (int)_boidSightRange, _gridSize, _window->getWidth(), _window->getHeight(), dt, _boidSightRangeSquared);
+	moveBoidKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _gridHeight, (int)_boidSightRange, _gridSize, dt);
 	cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
 	//updateBoidsPosition(h_boids);
 }

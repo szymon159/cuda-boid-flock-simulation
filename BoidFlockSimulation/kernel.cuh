@@ -5,21 +5,18 @@
 #include "thrust/device_ptr.h"
 #include "thrust/device_vector.h"
 
-void moveBoidKernelExecutor(float4 *&d_boids, 
-							float4 *&d_boidsDoubleBuffer, 
-							uint &arraySize, 
+void moveBoidKernelExecutor(float4 *&d_boids,
+							float4 *&d_boidsDoubleBuffer,
+							uint &arraySize,
 							int *&d_boidId,
 							int *&d_cellId,
 							int *&d_cellIdDoubleBuffer,
-							int *&d_cellBegin,	
+							int *&d_cellBegin,
 							int gridWidth,
 							int gridHeight,
 							int cellSize,
 							int cellCount,
-							int windowWidth,
-							int windowHeight,
-							uint dt, 
-							float boidSightRangeSquared);
+							uint dt);
 
 void initializeCellsKernelExecutor (float4 *&d_boids,
 									uint &boidArraySize,

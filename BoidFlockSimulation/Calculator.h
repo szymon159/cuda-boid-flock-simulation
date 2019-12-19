@@ -68,24 +68,24 @@ namespace Calculator
 		return make_float2(boidData.z, boidData.w);
 	}
 
-	__device__ __host__ static float4 getUpdatedBoidData(float4 oldBoidData, int windowWidth, int windowHeight, float2 movement = { 0,0 })
+	__device__ __host__ static float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = { 0,0 })
 	{
 		float4 result;
 
 		result.z = oldBoidData.z + movement.x;
 		result.w = oldBoidData.w + movement.y;
-		if (result.z * result.z + result.w * result.w > 25)
+		if (result.z * result.z + result.w * result.w > 9)
 		{
 			result.z = oldBoidData.z;
 			result.w = oldBoidData.w;
 		}
 
-		result.x = fmodf(oldBoidData.x + result.z, (float)windowWidth);
+		result.x = fmodf(oldBoidData.x + result.z, (float)WINDOW_WIDTH);
 		if (result.x < 0)
-			result.x += windowWidth;
-		result.y = fmodf(oldBoidData.y + result.w, (float)windowHeight);
+			result.x += WINDOW_WIDTH;
+		result.y = fmodf(oldBoidData.y + result.w, (float)WINDOW_HEIGHT);
 		if (result.y < 0)
-			result.y += windowHeight;
+			result.y += WINDOW_HEIGHT;
 
 		return result;
 	}
@@ -148,7 +148,25 @@ namespace Calculator
 		}
 	}
 
-	__device__ __host__ static float2 getFakeBoidPosition(float2 boidPosition, int cellId, int neighCellId, int gridWidth, int gridHeight, int windowWidth, int windowHeight)
+	__device__ __host__ static float2 addVectors(float2 vectors[], float weights[], int size)
+	{
+		float2 result = { 0,0 };
+
+		for (int i = 0; i < size; i++)
+		{
+			if (fabs(vectors[i].x) > 1e-8 && fabs(vectors[i].y) > 1e-8)
+			{
+				float2 normalizedVector = normalizeVector(vectors[i]);
+
+				result.x += weights[i] * normalizedVector.x;
+				result.y += weights[i] * normalizedVector.y;
+			}
+		}
+
+		return result;
+	}
+
+	__device__ __host__ static float2 getFakeBoidPosition(float2 boidPosition, int cellId, int neighCellId, int gridWidth, int gridHeight)
 	{
 		float2 result = boidPosition;
 
@@ -162,17 +180,17 @@ namespace Calculator
 		if (cellX != neighCellX)
 		{
 			if (cellX == 0)
-				result.x += windowWidth;
+				result.x += WINDOW_WIDTH;
 			else if (cellX == gridWidth - 1)
-				result.x -= windowWidth;
+				result.x -= WINDOW_WIDTH;
 		}
 
 		if (cellY != neighCellY)
 		{
 			if (cellY == 0)
-				result.x += windowHeight;
+				result.x += WINDOW_HEIGHT;
 			else if (cellX == gridHeight - 1)
-				result.x -= windowHeight;
+				result.x -= WINDOW_HEIGHT;
 		}
 
 		return result;
