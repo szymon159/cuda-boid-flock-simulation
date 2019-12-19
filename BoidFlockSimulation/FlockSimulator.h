@@ -17,11 +17,16 @@ private:
 
 	float4 *h_boids;
 	float4 *h_boidsDoubleBuffer;
-	int *h_boidId;
-	int *h_cellId;
-	int *h_cellIdDoubleBuffer;
+	//int *h_boidId;
+	//int *h_cellId;
+	//int *h_cellIdDoubleBuffer;
 	int *h_cellBegin;
-	
+
+	int h_boidId[BOID_COUNT];
+	int h_cellId[BOID_COUNT];
+	//int h_cellIdDoubleBuffer[BOID_COUNT];
+	//int h_cellBegin;
+
 	__device__ float4 *d_boids;
 	__device__ float4 *d_boidsDoubleBuffer;
 	__device__ int *d_boidId;

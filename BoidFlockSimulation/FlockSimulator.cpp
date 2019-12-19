@@ -41,9 +41,9 @@ FlockSimulator::FlockSimulator(WindowSDL *window)
 	}
 	else
 	{
-		h_boidId = (int *)malloc(boidCellArrSize);
-		h_cellId = (int *)malloc(boidCellArrSize);
-		h_cellIdDoubleBuffer = (int *)malloc(boidCellArrSize);
+		//h_boidId = (int *)malloc(boidCellArrSize);
+		//h_cellId = (int *)malloc(boidCellArrSize);
+		//h_cellIdDoubleBuffer = (int *)malloc(boidCellArrSize);
 		h_cellBegin = (int *)malloc(sizeof(int) * _gridSize);
 	}
 
@@ -65,9 +65,9 @@ FlockSimulator::~FlockSimulator()
 	else
 	{
 		free(h_boidsDoubleBuffer);
-		free(h_boidId);
-		free(h_cellId);
-		free(h_cellIdDoubleBuffer);
+		//free(h_boidId);
+		//free(h_cellId);
+		//free(h_cellIdDoubleBuffer);
 		free(h_cellBegin);
 	}
 
@@ -140,7 +140,31 @@ void FlockSimulator::update(uint dt)
 	}
 	else
 	{
-		moveBoidCPU(h_boids, h_boidsDoubleBuffer, _boidArrSize, h_boidId, h_cellId, h_cellIdDoubleBuffer, h_cellBegin, _gridWidth, _gridHeight, (int)SIGHT_RANGE, _gridSize, dt);
+		//moveBoidCPU(h_boids, h_boidsDoubleBuffer, _boidArrSize, h_boidId, h_cellId, h_cellIdDoubleBuffer, h_cellBegin, _gridWidth, _gridHeight, (int)SIGHT_RANGE, _gridSize, dt);
+		for (int i = 0; i < BOID_COUNT; i++)
+		{
+			Threads::moveBoidThreadWork(
+				i, 
+				h_boids,
+				h_boids,
+				h_boidId,
+				h_cellId,
+				h_cellId,
+				h_cellBegin,
+				_gridWidth,
+				_gridHeight,
+				(int)SIGHT_RANGE,
+				dt);
+		}
+
+		//memcpy(h_cellId, h_cellIdDoubleBuffer, BOID_COUNT * sizeof(int));
+		thrust::sort_by_key(thrust::host, h_cellId, h_cellId + BOID_COUNT, h_boidId);
+		memset(h_cellBegin, -1, _gridSize * sizeof(int));
+
+		for (int i = 0; i < BOID_COUNT; i++)
+		{
+			Threads::updateCellsThreadWork(i, h_cellId, h_cellBegin, _gridSize);
+		}
 	}
 
 	// GPU
@@ -274,7 +298,21 @@ void FlockSimulator::initializeCells()
 	}
 	else
 	{
-		initializeCellsCPU(h_boids, _boidArrSize, h_boidId, h_cellId, h_cellBegin, _gridWidth, (int)SIGHT_RANGE, _gridSize);
+		//initializeCellsCPU(h_boids, _boidArrSize, h_boidId, h_cellId, h_cellBegin, _gridWidth, (int)SIGHT_RANGE, _gridSize);
+
+		//std::thread threads[BOID_COUNT];
+		for (int i = 0; i < BOID_COUNT; i++)
+		{
+			Threads::initializeCellsThreadWork(i, h_boids, h_cellId, h_boidId, _gridWidth, (int)SIGHT_RANGE);
+		}
+		
+		thrust::sort_by_key(thrust::host, h_cellId, h_cellId + BOID_COUNT, h_boidId);
+		memset(h_cellBegin, -1, _gridSize * sizeof(int));
+
+		for (int i = 0; i < BOID_COUNT; i++)
+		{
+			Threads::updateCellsThreadWork(i, h_cellId, h_cellBegin, _gridSize);
+		}
 	}
 
 }
