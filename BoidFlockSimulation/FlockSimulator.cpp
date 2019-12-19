@@ -44,11 +44,13 @@ FlockSimulator::~FlockSimulator()
 	_window->destroyWindow();
 }
 
-int FlockSimulator::run()
+int FlockSimulator::run(float *runTime, uint *framesGenerated)
 {
 	// Main window loop
 	SDL_Event event;
-	uint time = SDL_GetTicks();
+	uint startTime = SDL_GetTicks();
+	uint time = startTime;
+
 
 	//h_boids = getBoidsArray();
 	
@@ -77,6 +79,9 @@ int FlockSimulator::run()
 		{
 			if (event.type == SDL_QUIT)
 			{
+				*runTime = (SDL_GetTicks() - startTime) / 1000.0f;
+
+				_window->destroyWindow();
 				return 0;
 			}
 		}
@@ -85,8 +90,10 @@ int FlockSimulator::run()
 
 		if (drawBoids())
 		{
+			_window->destroyWindow();
 			return 1;
 		}
+		(*framesGenerated)++;
 	}
 }
 

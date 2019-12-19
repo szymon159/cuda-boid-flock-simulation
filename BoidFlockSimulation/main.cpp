@@ -15,10 +15,17 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 
 	FlockSimulator simulator(&window);
-	//simulator.generateBoids(BOID_COUNT);
 
-	if (simulator.run())
+	float runTime;
+	uint framesGenerated = 0;
+
+	if (simulator.run(&runTime, &framesGenerated))
 		return EXIT_FAILURE;
 
+	printf("\nSimulator run for %.3f seconds and generated %u frames.\n", runTime, framesGenerated);
+	printf("It gives average of %.1f FPS.\n", framesGenerated / (float)runTime);
+	printf("If the result is close to refresh rate of your display, try increasing BOID_COUNT.\n");
+
+	system("pause");
 	return EXIT_SUCCESS;
 }

@@ -36,7 +36,7 @@ public:
 	//float4 *getBoidsArray();
 	//void updateBoidsPosition(float4 *boidsArray);
 
-	int run();
+	int run(float *runTime, uint *framesGenerated);
 	void update(uint dt);
 
 	//void addBoid(float x, float y, float2 velocity);
