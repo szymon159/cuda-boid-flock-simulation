@@ -61,12 +61,12 @@ void WindowSDL::destroyWindow()
 	printf("Window destroyed successfully!\n");
 }
 
-int WindowSDL::addBoidToRenderer(float4 boid, int boidSize)
+int WindowSDL::addBoidToRenderer(float4 boid)
 {
 	float2 position = Calculator::getBoidPosition(boid);
 	float angle = Calculator::getAngleFromVector(Calculator::getBoidVelocity(boid));
 
-	SDL_Rect dstrect = { (int)position.x, (int)position.y, boidSize, boidSize };
+	SDL_Rect dstrect = { (int)position.x, (int)position.y, BOID_SIZE, BOID_SIZE };
 	SDL_RendererFlip flip = (SDL_RendererFlip)(SDL_FLIP_NONE);
 
 	if (SDL_RenderCopyEx(_renderer, _boidTexture, NULL, &dstrect, angle, NULL, flip) < 0)

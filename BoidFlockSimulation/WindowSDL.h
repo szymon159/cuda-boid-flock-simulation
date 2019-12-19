@@ -26,7 +26,7 @@ public:
 	void destroyWindow();
 
 	int clearRenderer();
-	int addBoidToRenderer(float4 boid, int boidSize);
+	int addBoidToRenderer(float4 boid);
 	void render();
 
 private:

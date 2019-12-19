@@ -4,14 +4,14 @@
 
 
 // TODO: Add destructors
-FlockSimulator::FlockSimulator(WindowSDL *window, int boidCount, int boidSize, float boidSightRange)
-	: _window(window), _boidCount(boidCount), _boidSize(boidSize), _boidSightRange(boidSightRange), _boidSightRangeSquared(boidSightRange * boidSightRange)
+FlockSimulator::FlockSimulator(WindowSDL *window)
+	: _window(window)
 {	
 	// Initialization of boids
-	_boidArrSize = sizeof(float4) * boidCount;
-	size_t boidCellArrSize = sizeof(int) * boidCount;
+	_boidArrSize = sizeof(float4) * BOID_COUNT;
+	size_t boidCellArrSize = sizeof(int) * BOID_COUNT;
 
-	h_boids = (float4 *)malloc(boidCount * sizeof(float4));
+	h_boids = (float4 *)malloc(BOID_COUNT * sizeof(float4));
 	cudaMalloc((float4**)&d_boids, _boidArrSize);
 	cudaMalloc((float4**)&d_boidsDoubleBuffer, _boidArrSize);
 
@@ -19,8 +19,8 @@ FlockSimulator::FlockSimulator(WindowSDL *window, int boidCount, int boidSize, f
 	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
 
 	// Initialization of grid
-	_gridHeight = (uint)ceil(_window->getHeight() / _boidSightRange);
-	_gridWidth = (uint)ceil(_window->getWidth() / _boidSightRange);
+	_gridHeight = (uint)ceil(_window->getHeight() / SIGHT_RANGE);
+	_gridWidth = (uint)ceil(_window->getWidth() / SIGHT_RANGE);
 	_gridSize = _gridHeight * _gridWidth;
 
 	cudaMalloc((int**)&d_boidId, boidCellArrSize);
@@ -29,7 +29,7 @@ FlockSimulator::FlockSimulator(WindowSDL *window, int boidCount, int boidSize, f
 	cudaMalloc((int**)&d_cellBegin, sizeof(int) * _gridSize);
 
 	//TODO: Add a function which will do this on CPU/GPU
-	initializeCellsKernelExecutor(d_boids, _boidArrSize, d_boidId, d_cellId, d_cellBegin, _gridWidth, (int)_boidSightRange, _gridSize);
+	initializeCellsKernelExecutor(d_boids, _boidArrSize, d_boidId, d_cellId, d_cellBegin, _gridWidth, (int)SIGHT_RANGE, _gridSize);
 }
 
 FlockSimulator::~FlockSimulator()
@@ -98,7 +98,7 @@ void FlockSimulator::update(uint dt)
 
 
 	// GPU
-	moveBoidKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _gridHeight, (int)_boidSightRange, _gridSize, dt);
+	moveBoidKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _gridHeight, (int)SIGHT_RANGE, _gridSize, dt);
 	cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
 	//updateBoidsPosition(h_boids);
 }
@@ -133,7 +133,7 @@ void FlockSimulator::generateBoids()
 	int width = _window->getWidth();
 	int height = _window->getHeight();
 
-	for (int i = 0; i < _boidCount; i++)
+	for (int i = 0; i < BOID_COUNT; i++)
 	{
 		h_boids[i] = {
 			(float)(rand() % width),
@@ -160,9 +160,9 @@ int FlockSimulator::drawBoids()
 	}
 
 	//size_t boidCount = _boids.size();
-	for (size_t i = 0; i < _boidCount; i++)
+	for (size_t i = 0; i < BOID_COUNT; i++)
 	{
-		if (_window->addBoidToRenderer(h_boids[i], _boidSize))
+		if (_window->addBoidToRenderer(h_boids[i]))
 			return 1;
 	}
 	_window->render();

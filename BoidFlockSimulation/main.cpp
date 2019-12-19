@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	if (window.initWindow())
 		return EXIT_FAILURE;
 
-	FlockSimulator simulator(&window, BOID_COUNT, BOID_SIZE, SIGHT_RANGE);
+	FlockSimulator simulator(&window);
 	//simulator.generateBoids(BOID_COUNT);
 
 	if (simulator.run())
