@@ -3,6 +3,7 @@
 
 #include "Threads.h"
 
+// Async version of calculating updated boid's position on CPU
 void moveBoidCPU(float4 *&h_boids,
 				float4 *&h_boidsDoubleBuffer,
 				uint &arraySize,
@@ -16,6 +17,7 @@ void moveBoidCPU(float4 *&h_boids,
 				int cellCount,
 				uint dt);
 
+// Async version of initializing cells on CPU
 void initializeCellsCPU(float4 *&h_boids,
 						uint &boidArraySize,
 						int *&h_boidId,

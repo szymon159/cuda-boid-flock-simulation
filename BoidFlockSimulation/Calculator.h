@@ -4,24 +4,28 @@
 
 namespace Calculator
 {
+	// Updates value of separationFactor based on values of position of boid and its neighbour
 	__device__ __host__ static void updateSeparationFactor(float2 &separationFactor, const float2 &startBoidPosition, const float2 &targetBoidPosition)
 	{
 		separationFactor.x += (startBoidPosition.x - targetBoidPosition.x);
 		separationFactor.y += (startBoidPosition.y - targetBoidPosition.y);
 	}
 
+	// Updates value of alignmentFactor based on boid's neighbour velocity
 	__device__ __host__ static void updateAlignmentFactor(float2 &alignmentFactor, const float2 &targetBoidVelocity)
 	{
 		alignmentFactor.x += targetBoidVelocity.x;
 		alignmentFactor.y += targetBoidVelocity.y;
 	}
 
+	// Updates cohesionFactor based on boid's neighbour position
 	__device__ __host__ static void updateCohesionFactor(float2 &cohesionFactor, const float2 &targetBoidPosition)
 	{
 		cohesionFactor.x += targetBoidPosition.x;
 		cohesionFactor.y += targetBoidPosition.y;
 	}
 
+	// Returns distance between two points
 	__device__ __host__ static float calculateDistance(float2 startPoint, float2 targetPoint)
 	{
 		float distX = targetPoint.x - startPoint.x;
@@ -33,6 +37,7 @@ namespace Calculator
 		return distX + distY;
 	}
 
+	// Normalizes vector
 	__device__ __host__ static float2 normalizeVector(const float2 &vector)
 	{
 		float2 result = vector;
@@ -48,6 +53,7 @@ namespace Calculator
 		return	{ result.x / length, result.y / length };
 	}
 
+	// Applies refreshRateCoeefficient to movement vector to make speed independent from refreshRate
 	__device__ __host__ static float2 getMovementFromFactors(float2 sumOfFactors, float refreshRateCoefficient)
 	{
 		float2 movement;
@@ -58,16 +64,19 @@ namespace Calculator
 		return movement;
 	}
 
+	// Returns position of boid from vector of position and velocity
 	__device__ __host__ static float2 getBoidPosition(float4 boidData)
 	{
 		return make_float2(boidData.x, boidData.y);
 	}
 
+	// Returns velocity of boid from vector of position and velocity
 	__device__ __host__ static float2 getBoidVelocity(float4 boidData)
 	{
 		return make_float2(boidData.z, boidData.w);
 	}
 
+	// Returns new position and velocity (after applying movement)
 	__device__ __host__ static float4 getUpdatedBoidData(float4 oldBoidData, float2 movement = { 0,0 })
 	{
 		float4 result;
@@ -90,6 +99,7 @@ namespace Calculator
 		return result;
 	}
 
+	// Returns cellId from boid position
 	__device__ __host__ static int getCellId(float2 position, int gridWidth, int cellSize)
 	{
 		int cellX = (int)position.x / cellSize;
@@ -98,6 +108,7 @@ namespace Calculator
 		return cellY * gridWidth + cellX;
 	}
 
+	// Updates neighbourCells[] with ids of cells who may contain boids reacting with boids from cellId
 	__device__ __host__ static void getNeighbourCells(int cellId, int gridWidth, int gridHeight, int(&neighbourCells)[9])
 	{
 		int neighbourCellsCount = 0;
@@ -148,6 +159,7 @@ namespace Calculator
 		}
 	}
 
+	// Returns weighted sum of normalized vectors. If values are really short, skip this vector to avoid problems with normalization
 	__device__ __host__ static float2 addVectors(float2 vectors[], float weights[], int size)
 	{
 		float2 result = { 0,0 };
@@ -166,6 +178,7 @@ namespace Calculator
 		return result;
 	}
 
+	// Returns position of boid out of the window in order to react with boids from opposite site of the screen
 	__device__ __host__ static float2 getFakeBoidPosition(float2 boidPosition, int cellId, int neighCellId, int gridWidth, int gridHeight)
 	{
 		float2 result = boidPosition;
@@ -196,6 +209,7 @@ namespace Calculator
 		return result;
 	}
 
+	// Return angle in degrees from vector (used for rotating boids's texture)
 	static float getAngleFromVector(float2 vector)
 	{
 		float2 normalized = normalizeVector(vector);
@@ -209,16 +223,4 @@ namespace Calculator
 	
 		return angle;
 	}
-
-
-	//static void updateSeparationFactor(float2 &separationFactor, const float2 &startBoidPosition, const float2 &targetBoidPosition, const float &distance);
-	//static void updateAlignmentFactor(float2 &alignmentFactor, const float2 &targetBoidVelocity);
-	//static void updateCohesionFactor(float2 &cohesionFactor, const float2 &targetBoidPosition);
-
-	//static float2 normalizeVector(float2 &vector);
-	//static float normalizeAngle(float &angle);
-	//static float2 getVectorFromAngle(float angle);
-
-	//static float calculateDistance(float2 startPoint, float2 targetPoint);
-	//static float2 getMovementFromFactors(float2 separationVector, float2 alignmentVector, float2 cohesionVector, float refreshRateCoeficient);
 };

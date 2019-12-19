@@ -1,6 +1,7 @@
 #pragma once
 #include "includes.h"
 
+// Invokes kernel calculating updated boid's position
 void moveBoidGPU ( float4 *&d_boids,
 					float4 *&d_boidsDoubleBuffer,
 					uint &arraySize,
@@ -14,6 +15,8 @@ void moveBoidGPU ( float4 *&d_boids,
 					int cellCount,
 					uint dt);
 
+
+// Invokes kernel initializing cells
 void initializeCellsGPU(float4 *&d_boids,
 						uint &boidArraySize,
 						int *&d_boidId,

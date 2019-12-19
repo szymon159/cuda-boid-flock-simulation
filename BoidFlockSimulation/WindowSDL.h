@@ -2,8 +2,6 @@
 
 #include "includes.h"
 
-#include "Boid.h"
-
 class WindowSDL
 {
 private:

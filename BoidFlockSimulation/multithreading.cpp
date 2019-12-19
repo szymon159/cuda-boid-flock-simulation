@@ -1,5 +1,6 @@
 #include "multithreading.h"
 
+// Async version of calculating updated boid's position on CPU
 void moveBoidCPU(float4 *&h_boids, float4 *&h_boidsDoubleBuffer, uint &arraySize, int *&h_boidId, int *&h_cellId, int *&h_cellIdDoubleBuffer, int *&h_cellBegin, int gridWidth, int gridHeight, int cellSize, int cellCount, uint dt)
 {
 	std::thread threads[BOID_COUNT];
@@ -34,6 +35,7 @@ void moveBoidCPU(float4 *&h_boids, float4 *&h_boidsDoubleBuffer, uint &arraySize
 	memcpy(h_boids, h_boidsDoubleBuffer, arraySize);
 }
 
+// Async version of initializing cells on CPU
 void initializeCellsCPU(float4 *&h_boids, uint &boidArraySize, int *&h_boidId, int *&h_cellId, int *&h_cellBegin, int gridWidth, int cellSize, int cellCount)
 {
 	std::thread threads[BOID_COUNT];
