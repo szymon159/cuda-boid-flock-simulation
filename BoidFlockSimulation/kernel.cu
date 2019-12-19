@@ -59,7 +59,7 @@ __global__ void moveBoidKernel (float4 *d_boids,
 						dt);
 }
 
-void moveBoidKernelExecutor(float4 *&d_boids,
+void moveBoidGPU(float4 *&d_boids,
 							float4 *&d_boidsDoubleBuffer,
 							uint &arraySize,
 							int *&d_boidId,
@@ -85,7 +85,7 @@ void moveBoidKernelExecutor(float4 *&d_boids,
 	//printf("-------------------------------\n");
 }
 
-void initializeCellsKernelExecutor (float4 *&d_boids,
+void initializeCellsGPU (float4 *&d_boids,
 									uint &boidArraySize,
 									int *&d_boidId,
 									int *&d_cellId,

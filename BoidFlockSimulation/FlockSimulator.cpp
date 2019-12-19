@@ -1,6 +1,8 @@
 #include "FlockSimulator.h"
 
+#include "Threads.h"
 #include "kernel.cuh"
+#include "multithreading.h"
 
 
 // TODO: Add destructors
@@ -11,35 +13,64 @@ FlockSimulator::FlockSimulator(WindowSDL *window)
 	_boidArrSize = sizeof(float4) * BOID_COUNT;
 	size_t boidCellArrSize = sizeof(int) * BOID_COUNT;
 
-	h_boids = (float4 *)malloc(BOID_COUNT * sizeof(float4));
-	cudaMalloc((float4**)&d_boids, _boidArrSize);
-	cudaMalloc((float4**)&d_boidsDoubleBuffer, _boidArrSize);
-
+	h_boids = (float4 *)malloc(_boidArrSize);
 	generateBoids();
-	cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
+	
+	if (USE_GPU)
+	{
+		cudaMalloc((float4**)&d_boids, _boidArrSize);
+		cudaMalloc((float4**)&d_boidsDoubleBuffer, _boidArrSize);
+		cudaMemcpy(d_boids, h_boids, _boidArrSize, cudaMemcpyHostToDevice);
+	}
+	else
+	{
+		h_boidsDoubleBuffer = (float4 *)malloc(_boidArrSize);
+	}
 
 	// Initialization of grid
 	_gridHeight = (uint)ceil(_window->getHeight() / SIGHT_RANGE);
 	_gridWidth = (uint)ceil(_window->getWidth() / SIGHT_RANGE);
 	_gridSize = _gridHeight * _gridWidth;
 
-	cudaMalloc((int**)&d_boidId, boidCellArrSize);
-	cudaMalloc((int**)&d_cellId, boidCellArrSize);
-	cudaMalloc((int**)&d_cellIdDoubleBuffer, boidCellArrSize);
-	cudaMalloc((int**)&d_cellBegin, sizeof(int) * _gridSize);
+	if (USE_GPU)
+	{
+		cudaMalloc((int**)&d_boidId, boidCellArrSize);
+		cudaMalloc((int**)&d_cellId, boidCellArrSize);
+		cudaMalloc((int**)&d_cellIdDoubleBuffer, boidCellArrSize);
+		cudaMalloc((int**)&d_cellBegin, sizeof(int) * _gridSize);
+	}
+	else
+	{
+		h_boidId = (int *)malloc(boidCellArrSize);
+		h_cellId = (int *)malloc(boidCellArrSize);
+		h_cellIdDoubleBuffer = (int *)malloc(boidCellArrSize);
+		h_cellBegin = (int *)malloc(sizeof(int) * _gridSize);
+	}
 
-	//TODO: Add a function which will do this on CPU/GPU
-	initializeCellsKernelExecutor(d_boids, _boidArrSize, d_boidId, d_cellId, d_cellBegin, _gridWidth, (int)SIGHT_RANGE, _gridSize);
+	initializeCells();
+	//initializeCellsKernelExecutor(d_boids, _boidArrSize, d_boidId, d_cellId, d_cellBegin, _gridWidth, (int)SIGHT_RANGE, _gridSize);
 }
 
 FlockSimulator::~FlockSimulator()
 {
-	cudaFree(d_boids);
-	cudaFree(d_boidsDoubleBuffer);
-	cudaFree(d_boidId);
-	cudaFree(d_cellId);	
-	cudaFree(d_cellIdDoubleBuffer);
-	cudaFree(d_cellBegin);
+	if (USE_GPU)
+	{
+		cudaFree(d_boids);
+		cudaFree(d_boidsDoubleBuffer);
+		cudaFree(d_boidId);
+		cudaFree(d_cellId);
+		cudaFree(d_cellIdDoubleBuffer);
+		cudaFree(d_cellBegin);
+	}
+	else
+	{
+		free(h_boidsDoubleBuffer);
+		free(h_boidId);
+		free(h_cellId);
+		free(h_cellIdDoubleBuffer);
+		free(h_cellBegin);
+	}
+
 	free(h_boids);
 	_window->destroyWindow();
 }
@@ -102,11 +133,18 @@ void FlockSimulator::update(uint dt)
 	//// CPU
 	//moveBoids(dt);
 	
-
+	if (USE_GPU)
+	{
+		moveBoidGPU(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _gridHeight, (int)SIGHT_RANGE, _gridSize, dt);
+		cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
+	}
+	else
+	{
+		moveBoidCPU(h_boids, h_boidsDoubleBuffer, _boidArrSize, h_boidId, h_cellId, h_cellIdDoubleBuffer, h_cellBegin, _gridWidth, _gridHeight, (int)SIGHT_RANGE, _gridSize, dt);
+	}
 
 	// GPU
-	moveBoidKernelExecutor(d_boids, d_boidsDoubleBuffer, _boidArrSize, d_boidId, d_cellId, d_cellIdDoubleBuffer, d_cellBegin, _gridWidth, _gridHeight, (int)SIGHT_RANGE, _gridSize, dt);
-	cudaMemcpy(h_boids, d_boids, _boidArrSize, cudaMemcpyDeviceToHost);
+
 	//updateBoidsPosition(h_boids);
 }
 
@@ -228,3 +266,15 @@ int FlockSimulator::drawBoids()
 //	//	_boids[i].move(movement);
 //	//}
 //}
+void FlockSimulator::initializeCells()
+{
+	if (USE_GPU)
+	{
+		initializeCellsGPU(d_boids, _boidArrSize, d_boidId, d_cellId, d_cellBegin, _gridWidth, (int)SIGHT_RANGE, _gridSize);
+	}
+	else
+	{
+		initializeCellsCPU(h_boids, _boidArrSize, h_boidId, h_cellId, h_cellBegin, _gridWidth, (int)SIGHT_RANGE, _gridSize);
+	}
+
+}

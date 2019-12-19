@@ -94,6 +94,7 @@
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="FlockSimulator.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="multithreading.cpp" />
     <ClCompile Include="WindowSDL.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +103,7 @@
     <ClInclude Include="FlockSimulator.h" />
     <ClInclude Include="includes.h" />
     <ClInclude Include="kernel.cuh" />
+    <ClInclude Include="multithreading.h" />
     <ClInclude Include="Threads.h" />
     <ClInclude Include="WindowSDL.h" />
   </ItemGroup>

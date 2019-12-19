@@ -16,12 +16,19 @@ private:
 	float _boidSightRangeSquared;*/
 
 	float4 *h_boids;
+	float4 *h_boidsDoubleBuffer;
+	int *h_boidId;
+	int *h_cellId;
+	int *h_cellIdDoubleBuffer;
+	int *h_cellBegin;
+	
 	__device__ float4 *d_boids;
 	__device__ float4 *d_boidsDoubleBuffer;
 	__device__ int *d_boidId;
 	__device__ int *d_cellId;
 	__device__ int *d_cellIdDoubleBuffer;
 	__device__ int *d_cellBegin;
+
 	uint _boidArrSize;
 	uint _gridWidth;
 	uint _gridHeight;
@@ -41,6 +48,7 @@ public:
 
 	//void addBoid(float x, float y, float2 velocity);
 	int drawBoids();
+	void initializeCells();
 	//void moveBoids(float dt);
 
 private:
