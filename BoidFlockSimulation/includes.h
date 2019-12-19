@@ -19,6 +19,7 @@ constexpr int WINDOW_WIDTH = 1920;
 constexpr int BOID_SIZE = 16;
 constexpr float SIGHT_RANGE = 350;
 constexpr int BOID_COUNT = 10000;
+constexpr float MAX_SPEED = 9;
 
 constexpr int BLOCK_COUNT = BOID_COUNT / 256 + (BOID_COUNT % 256 != 0);
 constexpr float RADIAN_MULTIPLIER = (float)M_PI / 180;

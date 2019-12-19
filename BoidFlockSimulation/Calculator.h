@@ -74,7 +74,7 @@ namespace Calculator
 
 		result.z = oldBoidData.z + movement.x;
 		result.w = oldBoidData.w + movement.y;
-		if (result.z * result.z + result.w * result.w > 9)
+		if (result.z * result.z + result.w * result.w > MAX_SPEED)
 		{
 			result.z = oldBoidData.z;
 			result.w = oldBoidData.w;
