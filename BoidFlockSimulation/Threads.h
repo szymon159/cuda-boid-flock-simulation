@@ -111,7 +111,7 @@ namespace Threads
 		cohesionVector = { cohesionVector.x / boidsSeen - boidPosition.x, cohesionVector.y / boidsSeen - boidPosition.y };
 
 		float2 vectors[] = { separationVector, alignmentVector, cohesionVector };
-		float weights[] = { 1.0f, 0.125f, 0.01f };
+		float weights[] = { 1.5f, 0.125f, 0.0001f };
 		float2 sumOfFactors = addVectors(vectors, weights, 3);
 		float2 movement = getMovementFromFactors(sumOfFactors, refreshRateCoeeficient);
 
