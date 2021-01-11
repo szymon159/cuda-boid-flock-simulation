@@ -7,6 +7,7 @@ using namespace Calculator;
 
 namespace Threads
 {
+	// Calculations of updated cell begins
 	__device__ __host__ static void updateCellsThreadWork(int threadId, int *cellIds, int *cellBegins, int cellCount)
 	{
 		if (cellIds[threadId] < 0 || cellIds[threadId] >= cellCount)
@@ -15,11 +16,10 @@ namespace Threads
 		if (threadId == 0 || cellIds[threadId - 1] < cellIds[threadId])
 		{
 			cellBegins[cellIds[threadId]] = threadId;
-
-			//printf("CellId: %d BeginId: %d\n", d_cellId[tId], d_cellBegin[d_cellId[tId]]);
 		}
 	}
 
+	// Calculations of updated cellIds for boids
 	__device__ __host__ static void initializeCellsThreadWork(int threadId, float4 *boids, int *cellIds, int *boidIds, int gridWidth, int cellSize)
 	{
 		int boidIdx = threadId;
@@ -28,10 +28,9 @@ namespace Threads
 
 		cellIds[boidIdx] = getCellId(boidPosition, gridWidth, cellSize);
 		boidIds[boidIdx] = boidIdx;
-
-		//printf("BoidId: %d, CellId: %d\n", d_boidId[boidIdx], d_cellId[boidIdx]);
 	}
 
+	// Calculations of updated boid's position
 	__device__ __host__ static void moveBoidThreadWork(int threadId,
 		float4 *boids,
 		float4 *boidsDoubleBuffer,
@@ -45,7 +44,7 @@ namespace Threads
 		uint dt)
 	{
 		float refreshRateCoeeficient = dt / 1000.0f;
-		//printf("Refresh rate: %f\n", refreshRateCoeeficient);
+
 		int cellId = cellIds[threadId];
 		if (cellId < 0)
 			return;
@@ -68,15 +67,13 @@ namespace Threads
 		{
 			int neighCellId = neighCells[i];
 			float2 fakeBoidPosition = boidPosition;
-			if (neighCellId < 0)
+			if (neighCellId < 0) // Opposite site of the screen
 			{
 				neighCellId *= (-1);
 				fakeBoidPosition = getFakeBoidPosition(boidPosition, cellId, neighCellId, gridWidth, gridHeight);
 			}
 
 			int cellBegin = cellBegins[neighCellId];
-
-			//printf("cellId: %d, cellbegin: %d\n", neighCellId, cellBegin);
 
 			for (int j = cellBegin; j < BOID_COUNT; j++)
 			{
@@ -102,7 +99,7 @@ namespace Threads
 		if (boidsSeen == 0)
 		{
 			boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(boids[boidIdx]);
-			cellIdDoubleBuffer[threadId] = cellId;
+			cellIdDoubleBuffer[threadId] = cellId; //Updating boid's cellId
 			return;
 		}
 
@@ -118,7 +115,6 @@ namespace Threads
 		boidsDoubleBuffer[boidIdx] = getUpdatedBoidData(boids[boidIdx], movement);
 
 		uint newCellId = getCellId(getBoidPosition(boidsDoubleBuffer[boidIdx]), gridWidth, cellSize);
-		cellIdDoubleBuffer[threadId] = newCellId;
-		//printf("cellId: %d, new: %d\n", cellId, newCellId);
+		cellIdDoubleBuffer[threadId] = newCellId; //Updating boid's cellId
 	}
 }

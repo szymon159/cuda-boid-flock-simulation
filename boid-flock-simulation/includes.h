@@ -4,6 +4,12 @@
 #include <cstdlib>
 #include <vector>
 #include <ctime> 
+#include <thread>
+
+#include "thrust/sort.h"
+#include "thrust/device_ptr.h"
+#include "thrust/device_vector.h"
+#include "thrust/execution_policy.h"
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -14,11 +20,13 @@
 
 typedef unsigned int uint;
 
-constexpr int WINDOW_HEIGHT = 1080;
-constexpr int WINDOW_WIDTH = 1920;
+constexpr bool USE_GPU = true;
+
+constexpr int WINDOW_HEIGHT = 1440;
+constexpr int WINDOW_WIDTH = 2560;
 constexpr int BOID_SIZE = 16;
-constexpr float SIGHT_RANGE = 500;
-constexpr int BOID_COUNT = 10000;
+constexpr float SIGHT_RANGE = 700;
+constexpr int BOID_COUNT = 20000;
 constexpr float MAX_SPEED = 9;
 
 constexpr int BLOCK_COUNT = BOID_COUNT / 256 + (BOID_COUNT % 256 != 0);

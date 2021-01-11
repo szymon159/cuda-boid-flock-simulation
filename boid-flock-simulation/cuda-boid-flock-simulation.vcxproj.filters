@@ -6,16 +6,16 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="WindowSDL.cpp" />
-    <ClCompile Include="Boid.cpp" />
     <ClCompile Include="FlockSimulator.cpp" />
+    <ClCompile Include="multithreading.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowSDL.h" />
     <ClInclude Include="includes.h" />
-    <ClInclude Include="Boid.h" />
     <ClInclude Include="FlockSimulator.h" />
     <ClInclude Include="Calculator.h" />
     <ClInclude Include="kernel.cuh" />
     <ClInclude Include="Threads.h" />
+    <ClInclude Include="multithreading.h" />
   </ItemGroup>
 </Project>

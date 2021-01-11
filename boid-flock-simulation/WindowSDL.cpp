@@ -1,5 +1,7 @@
 #include "WindowSDL.h"
 
+#include "Calculator.h"
+
 WindowSDL::WindowSDL(int backgroundColor[4], char *windowTitle, int windowWidth, int windowHeight)
 	: _windowTitle(windowTitle), _windowWidth(windowWidth), _windowHeight(windowHeight), _window (nullptr), _renderer (nullptr)
 {
@@ -96,7 +98,6 @@ void WindowSDL::render()
 	SDL_RenderPresent(_renderer);
 }
 
-// Private methods
 
 int WindowSDL::loadBoidTexture()
 {
