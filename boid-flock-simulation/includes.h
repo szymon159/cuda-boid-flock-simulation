@@ -22,11 +22,11 @@ typedef unsigned int uint;
 
 constexpr bool USE_GPU = true;
 
-constexpr int WINDOW_HEIGHT = 1080;
-constexpr int WINDOW_WIDTH = 1920;
+constexpr int WINDOW_HEIGHT = 1440;
+constexpr int WINDOW_WIDTH = 2560;
 constexpr int BOID_SIZE = 16;
-constexpr float SIGHT_RANGE = 500;
-constexpr int BOID_COUNT = 1000;
+constexpr float SIGHT_RANGE = 700;
+constexpr int BOID_COUNT = 20000;
 constexpr float MAX_SPEED = 9;
 
 constexpr int BLOCK_COUNT = BOID_COUNT / 256 + (BOID_COUNT % 256 != 0);
